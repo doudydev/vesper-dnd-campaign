@@ -1,0 +1,1139 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Krant Region - Západ</title>
+<style>
+:root{--void:#07120d;--panel:#0e1e17;--panel2:#14291f;--panel3:#0a1912;
+--line:#25453a;--line2:#142a21;--bone:#8fb3a1;--dim:#5c8071;--bright:#cfe8db;
+--accent:#4fbf8f;--accent-bg:#16332a;--accent-hi:#8ef0c2;--accent-soft:rgba(79,191,143,.16);
+--amber:#c9a44a;--oxide:#c0603a;--trough:#0a1611;--thumb:#2a4d3f;--thumb-hi:#3a6553;
+--float:rgba(12,28,21,.95);
+--mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--thumb) var(--trough)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--trough)}
+::-webkit-scrollbar-thumb{background:var(--thumb);border:2px solid var(--trough)}
+::-webkit-scrollbar-thumb:hover{background:var(--thumb-hi)}
+html,body{margin:0;height:100%}
+body{background:var(--void);color:var(--bone);font-family:var(--mono);font-size:12px;
+line-height:1.5;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+header{display:flex;align-items:baseline;gap:13px;padding:9px 15px;
+border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+h1{margin:0;font-size:13px;color:var(--bright);letter-spacing:.3em;text-transform:uppercase;font-weight:400}
+.sub{color:var(--dim);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.wrap{flex:1;display:flex;min-height:0}
+.stage{flex:1;position:relative;min-width:0}
+.field{position:absolute;inset:0;overflow:auto;padding:16px}
+.stack{position:relative;line-height:0;width:max-content}
+canvas{display:block;position:absolute;top:0;left:0}
+#pix{position:relative;image-rendering:pixelated;image-rendering:crisp-edges}
+#lbl{pointer-events:none}
+.zoomctl{position:absolute;right:18px;top:18px;z-index:5;display:flex;align-items:stretch;
+background:var(--float);border:1px solid var(--line)}
+.zoomctl button{background:none;border:0;padding:4px 11px;cursor:pointer;font-size:15px;color:var(--bone)}
+.zoomctl button:hover{background:var(--panel2);color:var(--bright)}
+.zoomctl button:disabled{opacity:.3;cursor:default}
+.zoomctl .zruler{border-right:1px solid var(--line);font-size:14px}
+.zoomctl .zruler[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent-hi)}
+.zoomctl span{padding:0 9px;font-size:10px;color:var(--dim);letter-spacing:.12em;
+border-left:1px solid var(--line);border-right:1px solid var(--line);display:flex;align-items:center}
+.panel{width:336px;flex:none;background:var(--panel);border-left:1px solid var(--line);
+display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;background:none;border:0;border-right:1px solid var(--line);padding:9px 4px;
+cursor:pointer;color:var(--dim);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+text-transform:uppercase}
+.tabs button:last-child{border-right:0}
+#wikiFind{width:100%;background:var(--void);border:1px solid var(--line);color:var(--bright);
+  font:inherit;font-size:12px;padding:6px 8px;margin-bottom:10px}
+#wikiFind:focus{outline:none;border-color:var(--accent)}
+.wsec{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  margin:13px 0 5px;border-bottom:1px solid var(--line2);padding-bottom:3px}
+.wsec:first-child{margin-top:0}
+.wart{border-left:2px solid var(--line);padding:1px 0 1px 9px;margin-bottom:11px}
+.wart.site{border-left-color:var(--accent)}
+.wart.unknown{border-left-color:var(--amber)}
+.wart.unknown h4{color:var(--amber);letter-spacing:.12em}
+.wart .wb.muted{color:var(--dim);font-style:italic}
+a.wrow{display:block;text-decoration:none;cursor:pointer;margin-bottom:9px}
+a.wrow:hover{border-left-color:var(--accent-hi);background:var(--panel2)}
+a.wrow h4{color:var(--bright)}
+.wex{color:var(--bone);font-size:11.5px;line-height:1.5;margin-top:3px}
+.wex.muted{color:var(--dim);font-style:italic}
+.wback{display:inline-block;color:var(--accent);text-decoration:none;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:11px}
+.wfull h3{margin:0 0 3px;font-size:15px;color:var(--bright)}
+.wfull .wx{margin-bottom:9px}
+.wfull .wb{font-size:12.5px;line-height:1.62;white-space:pre-wrap;color:var(--bone)}
+.wgoto{display:inline-block;margin-top:13px;color:var(--accent);text-decoration:none;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+.wikilink{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent)}
+.wart .wx a{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent)}
+.wart h4{margin:0 0 3px;font-size:12.5px;color:var(--bright);font-weight:700}
+.wart .wx{color:var(--dim);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
+.wart .wb{color:var(--bone);font-size:12px;line-height:1.55;margin-top:4px;white-space:pre-wrap}
+.wnone{color:var(--dim);font-size:12px;line-height:1.5}
+.measurebox{position:absolute;left:12px;top:12px;z-index:6;width:216px;background:var(--float);
+  border:1px solid var(--line);padding:9px 11px 11px;font-size:11.5px;color:var(--bone)}
+.measurebox.hidden{display:none}
+.mb-h{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px}
+.measurebox .mb-r{display:flex;justify-content:space-between;gap:8px;margin:2px 0}
+.measurebox .mb-r b{color:var(--bright);font-weight:600}
+.stage{position:relative}
+.tabs button:hover{color:var(--bone);background:var(--panel2)}
+.tabs button[aria-pressed="true"]{color:var(--bright);background:var(--accent-bg);
+box-shadow:inset 0 -2px 0 var(--accent)}
+.pane{flex:1;overflow-y:auto;padding:15px;min-height:0}
+.measurebox{position:absolute;right:18px;top:62px;z-index:5;width:210px;
+background:var(--float);border:1px solid var(--line);padding:9px 11px;line-height:1.55}
+.measurebox .mb-h{color:var(--bright);letter-spacing:.14em;text-transform:uppercase;font-size:9.5px;margin-bottom:5px}
+.measurebox .mb-r{display:flex;justify-content:space-between;gap:9px;font-size:11px}
+.measurebox .mb-r b{color:var(--bright)}
+.measurebox .mb-warn{color:var(--oxide);margin-top:5px;font-size:10.5px}
+.measurebox .mb-hint{color:var(--dim);margin-top:5px;font-size:9.5px}
+.hidden{display:none}
+.dir{margin:0 0 20px}
+.dir:last-child{margin-bottom:6px}
+.dirdate{color:var(--amber);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+.dir h3{margin:0 0 7px;font-size:14px;color:var(--bright);font-weight:600;line-height:1.35}
+.dirbody{white-space:pre-wrap;line-height:1.65}
+.dir audio{width:100%;margin-top:9px;filter:invert(.9) hue-rotate(170deg)}
+.dirtag{color:var(--amber);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;margin-top:8px}
+.dirsep{border:0;border-top:1px solid var(--line);margin:0 0 18px}
+.hexlink{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent);cursor:pointer}
+.hexlink:hover{color:var(--accent-hi);background:var(--accent-soft)}
+.coord{color:var(--bright);letter-spacing:.22em;font-size:18px}
+.meta{color:var(--dim);letter-spacing:.14em;text-transform:uppercase;font-size:9.5px;margin-bottom:11px}
+.site{color:var(--bright);font-size:14px;margin-bottom:7px}
+.brief{color:var(--bone);white-space:pre-wrap}
+.rule{border:0;border-top:1px solid var(--line);margin:13px 0}
+.pbtn{background:var(--panel2);border:1px solid var(--line);padding:6px 9px;cursor:pointer;
+letter-spacing:.06em;text-transform:uppercase;font-size:10px;color:var(--bone);width:100%;margin-top:9px}
+.pbtn:hover{border-color:var(--dim);color:var(--bright)}
+.muted{color:var(--dim)}
+.lgd{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:10.5px}
+.lsec{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  margin:13px 0 5px;border-bottom:1px solid var(--line2);padding-bottom:3px}
+.lsec:first-child{margin-top:0}
+.lgrid{display:flex;flex-direction:column;gap:3px}
+.lgd i.chip{width:15px;height:12px;flex:none;border:1px solid rgba(0,0,0,.5);display:block}
+.lgd i.chip.unk{background:repeating-linear-gradient(-45deg,var(--line) 0 2px,transparent 2px 5px);
+  border-color:var(--line)}
+.lgd i.gly{width:15px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-style:normal;line-height:1;border:0}
+.lgd i.ln{width:15px;height:12px;flex:none;display:flex;align-items:center;border:0}
+.lgd i.ln b{display:block;width:100%;height:3px}
+.lgd span{min-width:0}
+/* identical to the editor masthead: same size, tracking, colour */
+.wm{color:var(--bright);letter-spacing:.34em;text-transform:uppercase;font-size:13px}
+.wdiv{color:var(--dim);margin:0 9px 0 5px;letter-spacing:0}
+#hTitle{color:var(--bright);font-size:13px;letter-spacing:.06em;text-transform:none;font-weight:400}
+h1{display:flex;align-items:baseline}
+.spacer{flex:1}
+/* One group, right-aligned, both rows the same height so they line up
+   regardless of the header's baseline alignment. */
+.hctl{display:flex;align-items:center;gap:10px;margin-left:12px;align-self:center}
+.locsel{display:flex;height:19px;border:1px solid var(--line)}
+.locsel button{background:none;border:0;color:var(--dim);font:inherit;font-size:10px;
+  letter-spacing:.1em;padding:0 8px;cursor:pointer;line-height:17px}
+.locsel button+button{border-left:1px solid var(--line)}
+.locsel button[aria-pressed="true"]{background:var(--accent-bg);color:var(--bright)}
+.pthemes{display:flex;gap:4px;align-items:center;height:19px}
+.pthemes button{width:17px;height:17px;border:1px solid var(--line);cursor:pointer;padding:0;
+  display:block}
+.pthemes button[aria-pressed="true"]{border-color:var(--bright);box-shadow:0 0 0 1px var(--bright)}
+:focus-visible{outline:1px solid var(--accent);outline-offset:1px}
+</style>
+<header>
+  <h1><span class="wm">Vesper</span><span class="wdiv">·</span><span id="hTitle"></span></h1>
+  <span class="sub" id="hMode"></span>
+  <span class="spacer"></span>
+  <span class="sub muted" id="hStamp"></span>
+  <div class="hctl">
+    <div class="locsel" id="pLoc">
+      <button data-l="cs" aria-pressed="true">CS</button><button data-l="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="pthemes" id="pThemes" title="Colour scheme">
+      <button data-t="malachite" style="background:#4fbf8f" aria-label="Malachite"></button>
+      <button data-t="slate" style="background:#55919f" aria-label="Slate"></button>
+      <button data-t="cinnabar" style="background:#e0573c" aria-label="Cinnabar"></button>
+      <button data-t="solar" style="background:#e8b93c" aria-label="Solar"></button>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <div class="zoomctl">
+      <button id="zRuler" class="zruler" aria-label="Measure" aria-pressed="false">&#8596;</button>
+      <button id="zOut" aria-label="Zoom out">&minus;</button>
+      <span id="zVal">2&times;</span>
+      <button id="zIn" aria-label="Zoom in">+</button>
+    </div>
+    <div class="measurebox hidden" id="measureBox">
+      <div class="mb-h">Route</div>
+      <div id="mbBody"></div>
+      <button class="pbtn" id="mbClear" style="margin-top:7px">Clear route</button>
+    </div>
+    <div class="field"><div class="stack" id="stack">
+      <canvas id="pix"></canvas><canvas id="lbl"></canvas>
+    </div></div>
+  </div>
+  <aside class="panel">
+    <div class="tabs">
+      <button data-t="brief" aria-pressed="true">Briefings</button>
+      <button data-t="wiki" aria-pressed="false">Wiki</button>
+      <button data-t="hex" aria-pressed="false">This hex</button>
+      <button data-t="key" aria-pressed="false">Key</button>
+    </div>
+    <div class="pane" id="paneBrief"></div>
+    <div class="pane hidden" id="paneHex">
+      <div class="coord" id="pCoord">&mdash;</div>
+      <div class="meta" id="pMeta">Click a hex on the map</div>
+      <div class="site" id="pSite"></div>
+      <div class="brief" id="pBrief"></div>
+      <button class="pbtn" id="pDetail" style="display:none">View close-up</button>
+      <button class="pbtn" id="pBack" style="display:none">Back to region</button>
+    </div>
+    <div class="pane hidden" id="paneWiki">
+      <input type="search" id="wikiFind" placeholder="Search the wiki" autocomplete="off">
+      <div id="wikiBody"></div>
+    </div>
+    <div class="pane hidden" id="paneKey"><div id="pLegend"></div></div>
+  </aside>
+</div>
+<script>
+(function(){
+"use strict";
+var EMBEDDED = {"v":15,"title":"Krant Region - Západ","cols":30,"rows":20,"hexes":{"0,0":{"t":"high","k":"red","r":1},"1,0":{"t":"high","k":"red","r":1},"2,0":{"t":"high","k":"red","r":1},"3,0":{"t":"high","k":"red","r":1},"4,0":{"t":"tundra","k":"red","r":1},"5,0":{"t":"forest","k":"red","r":1},"6,0":{"t":"forest","k":"red","r":1},"7,0":{"t":"forest","k":"red","r":1},"8,0":{"t":"forest","k":"red","r":1},"9,0":{"t":"forest","k":"red","r":1},"10,0":{"t":"ash","k":"red","r":1},"11,0":{"t":"ash","k":"red","r":1},"12,0":{"t":"ash","k":"red","r":1},"13,0":{"t":"ash","k":"red","r":1},"14,0":{"t":"ash","k":"red","r":1},"15,0":{"t":"forest","k":"red","r":1},"16,0":{"t":"forest","k":"red","r":1},"17,0":{"t":"forest","k":"red","r":1},"18,0":{"t":"forest","k":"red","r":1},"19,0":{"t":"ruin","k":"red","r":1},"20,0":{"t":"ruin","k":"red","r":1},"21,0":{"t":"ash","k":"red","r":1},"22,0":{"t":"ash","k":"red","r":1},"23,0":{"t":"forest","k":"red","r":1},"24,0":{"t":"forest","k":"red","r":1},"25,0":{"t":"forest","k":"red","r":1},"26,0":{"t":"forest","k":"red","r":1},"27,0":{"t":"ruin","k":"red","r":1},"28,0":{"t":"ruin","k":"red","r":1},"29,0":{"t":"ruin","k":"red","r":1},"0,1":{"t":"high","k":"red","r":1},"1,1":{"t":"high","k":"red","r":1},"2,1":{"t":"high","k":"red","r":1},"3,1":{"t":"high","k":"red","r":1},"4,1":{"t":"tundra","k":"red","r":1},"5,1":{"t":"ruin","k":"none","r":1},"6,1":{"t":"ruin","k":"none","r":1},"7,1":{"t":"tundra","k":"none","r":1},"8,1":{"t":"forest","k":"red","r":1},"9,1":{"t":"forest","k":"red","r":1},"10,1":{"t":"ash","k":"red","r":1},"11,1":{"t":"ash","k":"red","r":2,"b":"Hlavní logistický uzel a vojenská letecká základna a pevnost Kolvathu v Krant regionu. Silně opevněná, vyzbrojená protiletadlovou ochranou a klíčovým bodem obrany.","m":"red","n":"Základna Železný Kříž"},"12,1":{"t":"ash","k":"red","r":1},"13,1":{"t":"ash","k":"red","r":1},"14,1":{"t":"forest","k":"red","r":1},"15,1":{"t":"forest","k":"none","r":1},"16,1":{"t":"forest","k":"none","r":1},"17,1":{"t":"forest","k":"red","r":1},"18,1":{"t":"ash","k":"red","r":1},"19,1":{"t":"ash","k":"red","r":1},"20,1":{"t":"ash","k":"red","r":1},"21,1":{"t":"ash","k":"none","r":1},"22,1":{"t":"tundra","k":"none","r":1},"23,1":{"t":"forest","k":"red","r":1},"24,1":{"t":"forest","k":"red","r":1},"25,1":{"t":"forest","k":"red","r":1},"26,1":{"t":"forest","k":"red","r":1},"27,1":{"t":"forest","k":"red","r":1},"28,1":{"t":"forest","k":"red","r":1},"29,1":{"t":"ash","k":"red","r":1},"0,2":{"t":"sea","k":"red","r":1},"1,2":{"t":"sea","k":"red","r":1},"2,2":{"t":"high","k":"red","r":1},"3,2":{"t":"high","k":"red","r":1},"4,2":{"t":"tundra","k":"none","r":1},"5,2":{"t":"forest","k":"none","r":1},"6,2":{"t":"ash","k":"none","r":1},"7,2":{"t":"ash","k":"none","r":1},"8,2":{"t":"tundra","k":"none","r":1},"9,2":{"t":"ash","k":"none","r":1},"10,2":{"t":"ash","k":"none","r":1},"11,2":{"t":"ash","k":"red","r":1},"12,2":{"t":"ash","k":"red","r":1},"13,2":{"t":"ash","k":"red","r":1},"14,2":{"t":"tundra","k":"none","r":1},"15,2":{"t":"tundra","k":"none","r":1},"16,2":{"t":"ruin","k":"none","r":1},"17,2":{"t":"tundra","k":"none","r":1},"18,2":{"t":"tundra","k":"none","r":1},"19,2":{"t":"ash","k":"none","r":1},"20,2":{"t":"ash","k":"none","r":1},"21,2":{"t":"ash","k":"none","r":1},"22,2":{"t":"ash","k":"none","r":1},"23,2":{"t":"tundra","k":"none","r":1},"24,2":{"t":"tundra","k":"none","r":1},"25,2":{"t":"tundra","k":"none","r":1},"26,2":{"t":"ash","k":"none","r":1},"27,2":{"t":"ruin","k":"none","r":1},"28,2":{"t":"forest","k":"red","r":1},"29,2":{"t":"ash","k":"none","r":1},"0,3":{"t":"sea","k":"red","r":1},"1,3":{"t":"high","k":"red","r":1},"2,3":{"t":"ruin","k":"none","r":1},"3,3":{"t":"ash","k":"none","r":1},"4,3":{"t":"ash","k":"none","r":1},"5,3":{"t":"ash","k":"none","r":1},"6,3":{"t":"ash","k":"none","r":1},"7,3":{"t":"ash","k":"none","r":1},"8,3":{"t":"ash","k":"none","r":1},"9,3":{"t":"ruin","k":"none","r":1},"10,3":{"t":"ruin","k":"none","r":1},"11,3":{"t":"ash","k":"none","r":1},"12,3":{"t":"ash","k":"none","r":1},"13,3":{"t":"ash","k":"none","r":1},"14,3":{"t":"ash","k":"none","r":1},"15,3":{"t":"ruin","k":"none","r":1},"16,3":{"t":"ruin","k":"none","r":1},"17,3":{"t":"tundra","k":"none","r":1},"18,3":{"t":"tundra","k":"none","r":1},"19,3":{"t":"ash","k":"none","r":1},"20,3":{"t":"ash","k":"none","r":1},"21,3":{"t":"ruin","k":"none","r":1},"22,3":{"t":"ruin","k":"none","r":1},"23,3":{"t":"tundra","k":"none","r":1},"24,3":{"t":"tundra","k":"none","r":1},"25,3":{"t":"ash","k":"none","r":1},"26,3":{"t":"ash","k":"none","r":1},"27,3":{"t":"ash","k":"none","r":1},"28,3":{"t":"ash","k":"none","r":1},"29,3":{"t":"ash","k":"none","r":1},"0,4":{"t":"sea","k":"none","r":1},"1,4":{"t":"tundra","k":"none","r":1},"2,4":{"t":"tundra","k":"none","r":1},"3,4":{"t":"ash","k":"none","r":1},"4,4":{"t":"ash","k":"none","r":1},"5,4":{"t":"ash","k":"none","r":1},"6,4":{"t":"ash","k":"none","r":1},"7,4":{"t":"ash","k":"none","r":1},"8,4":{"t":"ash","k":"none","r":1},"9,4":{"t":"ash","k":"none","r":1},"10,4":{"t":"ruin","k":"none","r":1},"11,4":{"t":"ash","k":"none","r":1},"12,4":{"t":"crater","k":"none","r":1},"13,4":{"t":"ash","k":"none","r":1},"14,4":{"t":"ash","k":"none","r":1},"15,4":{"t":"ash","k":"none","r":1},"16,4":{"t":"ash","k":"none","r":1},"17,4":{"t":"ash","k":"none","r":1},"18,4":{"t":"tundra","k":"none","r":1},"19,4":{"t":"ash","k":"none","r":1},"20,4":{"t":"ash","k":"none","r":1},"21,4":{"t":"ash","k":"none","r":1},"22,4":{"t":"ruin","k":"none","r":1},"23,4":{"t":"ruin","k":"none","r":1},"24,4":{"t":"ruin","k":"none","r":1,"b":"Předsunutá operační základna Kolvathu. Spatřena ze vzduchu, dokončena circa 2371, dobře zásobovaná a opevněná."},"25,4":{"t":"ash","k":"none","r":1},"26,4":{"t":"ash","k":"none","r":1},"27,4":{"t":"ash","k":"none","r":1},"28,4":{"t":"ash","k":"none","r":1},"29,4":{"t":"ash","k":"none","r":1},"0,5":{"t":"sea","k":"none","r":1},"1,5":{"t":"tundra","k":"none","r":1},"2,5":{"t":"ruin","k":"none","r":1},"3,5":{"t":"ash","k":"none","r":1},"4,5":{"t":"ash","k":"none","r":1},"5,5":{"t":"tundra","k":"none","r":1},"6,5":{"t":"tundra","k":"none","r":1},"7,5":{"t":"ash","k":"none","r":1},"8,5":{"t":"ash","k":"none","r":1},"9,5":{"t":"ash","k":"none","r":1},"10,5":{"t":"ash","k":"none","r":1},"11,5":{"t":"crater","k":"none","r":1},"12,5":{"t":"ash","k":"none","r":1},"13,5":{"t":"ash","k":"none","r":1},"14,5":{"t":"tundra","k":"none","r":1},"15,5":{"t":"ash","k":"none","r":1},"16,5":{"t":"crater","k":"none","r":1},"17,5":{"t":"ruin","k":"none","r":1},"18,5":{"t":"ash","k":"none","r":1},"19,5":{"t":"ash","k":"none","r":1},"20,5":{"t":"ash","k":"none","r":1},"21,5":{"t":"ash","k":"none","r":1},"22,5":{"t":"ash","k":"none","r":1},"23,5":{"t":"ash","k":"none","r":1},"24,5":{"t":"ash","k":"none","r":1},"25,5":{"t":"ash","k":"none","r":1},"26,5":{"t":"ash","k":"none","r":1},"27,5":{"t":"ash","k":"none","r":1},"28,5":{"t":"ruin","k":"none","r":1},"29,5":{"t":"ruin","k":"none","r":1},"0,6":{"t":"sea","k":"none","r":1},"1,6":{"t":"sea","k":"none","r":1},"2,6":{"t":"sea","k":"none","r":1},"3,6":{"t":"ruin","k":"none","r":1},"4,6":{"t":"ruin","k":"none","r":1},"5,6":{"t":"tundra","k":"none","r":1},"6,6":{"t":"high","k":"none","r":1},"7,6":{"t":"ash","k":"none","r":1},"8,6":{"t":"ash","k":"none","r":1},"9,6":{"t":"ash","k":"none","r":1},"10,6":{"t":"ash","k":"none","r":1},"11,6":{"t":"ash","k":"none","r":1},"12,6":{"t":"ruin","k":"none","r":1},"13,6":{"t":"high","k":"none","r":1},"14,6":{"t":"high","k":"none","r":1},"15,6":{"t":"tundra","k":"none","r":1},"16,6":{"t":"ruin","k":"none","r":1},"17,6":{"t":"ruin","k":"none","r":1,"b":"Metropole o předválečné populaci 1.5 milionu. Srovnána se zemí v první vlně bombardování. Nyní ji obývá válkou ošlehaná posádka místních banditů."},"18,6":{"t":"ash","k":"none","r":1},"19,6":{"t":"ash","k":"none","r":1},"20,6":{"t":"ash","k":"none","r":1},"21,6":{"t":"ash","k":"none","r":1},"22,6":{"t":"tundra","k":"none","r":1},"23,6":{"t":"tundra","k":"none","r":1},"24,6":{"t":"crater","k":"none","r":1},"25,6":{"t":"ash","k":"none","r":1},"26,6":{"t":"ash","k":"none","r":1},"27,6":{"t":"ash","k":"none","r":1},"28,6":{"t":"ash","k":"none","r":1},"29,6":{"t":"ruin","k":"none","r":1},"0,7":{"t":"sea","k":"none","r":1},"1,7":{"t":"sea","k":"none","r":1},"2,7":{"t":"sea","k":"none","r":1},"3,7":{"t":"sea","k":"none","r":1},"4,7":{"t":"sea","k":"none","r":1},"5,7":{"t":"high","k":"none","r":1},"6,7":{"t":"high","k":"none","r":1},"7,7":{"t":"ash","k":"none","r":1},"8,7":{"t":"ash","k":"none","r":1},"9,7":{"t":"ash","k":"none","r":1},"10,7":{"t":"ash","k":"none","r":1},"11,7":{"t":"ruin","k":"none","r":1},"12,7":{"t":"ice","k":"none","r":1,"b":"Podpůrná klimatická stanice vybudovaná společně s výzkumnou stanicí Kolvasia. Jelikož výzkum Projektu Arcturus vyžadoval značné logistické úsilí, obě stanice byly primárně zásobovány základnou Železný Kříž. "},"13,7":{"t":"ruin","k":"none","r":2,"b":"První výzkumná stanice Projektu Arcturus vybudovaná v roce 2320 a uvedena do provozu o rok později vznikla jako společné úsilí obou národních států. Stanice byla tedy pokřtěna spojením obou jejich jmen - Kolvathu a Occasia. Po vypuknutí války v roce 2347 byla značná část stanice zničena sabotáží obou týmů ve snaze znemožnit druhé straně možnost evakuace důležitých dokumentů. Dle informací z průzkumných letů vypadá stanice opuštěně.","m":"lab","n":"Stanice Kolvasia"},"14,7":{"t":"high","k":"none","r":1},"15,7":{"t":"tundra","k":"none","r":1},"16,7":{"t":"ash","k":"none","r":1},"17,7":{"t":"ash","k":"none","r":1},"18,7":{"t":"ash","k":"none","r":1},"19,7":{"t":"ash","k":"none","r":1},"20,7":{"t":"ash","k":"none","r":1},"21,7":{"t":"tundra","k":"none","r":1},"22,7":{"t":"tundra","k":"none","r":1},"23,7":{"t":"crater","k":"none","r":1},"24,7":{"t":"ash","k":"none","r":1},"25,7":{"t":"ash","k":"none","r":1},"26,7":{"t":"ash","k":"none","r":1},"27,7":{"t":"ash","k":"none","r":1},"28,7":{"t":"ash","k":"none","r":1},"29,7":{"t":"ash","k":"none","r":1},"0,8":{"t":"sea","k":"none","r":1},"1,8":{"t":"sea","k":"none","r":1},"2,8":{"t":"sea","k":"none","r":1},"3,8":{"t":"sea","k":"none","r":1},"4,8":{"t":"ash","k":"none","r":1},"5,8":{"t":"sea","k":"none","r":1},"6,8":{"t":"ruin","k":"none","r":1},"7,8":{"t":"ash","k":"none","r":1},"8,8":{"t":"ash","k":"none","r":1},"9,8":{"t":"ash","k":"none","r":1},"10,8":{"t":"ash","k":"none","r":1},"11,8":{"t":"ash","k":"none","r":1},"12,8":{"t":"ash","k":"none","r":1},"13,8":{"t":"ash","k":"none","r":1},"14,8":{"t":"tundra","k":"none","r":1},"15,8":{"t":"tundra","k":"none","r":1},"16,8":{"t":"ash","k":"none","r":1},"17,8":{"t":"ash","k":"none","r":1},"18,8":{"t":"ash","k":"none","r":1},"19,8":{"t":"ash","k":"none","r":1},"20,8":{"t":"ash","k":"none","r":1},"21,8":{"t":"ash","k":"none","r":1},"22,8":{"t":"ash","k":"none","r":1},"23,8":{"t":"ash","k":"none","r":1},"24,8":{"t":"ash","k":"none","r":1},"25,8":{"t":"ash","k":"none","r":1},"26,8":{"t":"rad","k":"none","r":1},"27,8":{"t":"rad","k":"none","r":1},"28,8":{"t":"ash","k":"none","r":1},"29,8":{"t":"ash","k":"none","r":1},"0,9":{"t":"sea","k":"none","r":1},"1,9":{"t":"sea","k":"none","r":1},"2,9":{"t":"sea","k":"none","r":1},"3,9":{"t":"sea","k":"none","r":1},"4,9":{"t":"sea","k":"none","r":1},"5,9":{"t":"sea","k":"none","r":1},"6,9":{"t":"ruin","k":"none","r":1},"7,9":{"t":"ash","k":"none","r":1},"8,9":{"t":"ash","k":"fmt93cvsl","r":1},"9,9":{"t":"ash","k":"fmt93cvsl","r":1},"10,9":{"t":"ash","k":"none","r":1},"11,9":{"t":"ash","k":"none","r":1},"12,9":{"t":"ash","k":"none","r":1},"13,9":{"t":"ash","k":"none","r":1},"14,9":{"t":"ash","k":"none","r":1},"15,9":{"t":"ash","k":"none","r":1},"16,9":{"t":"ash","k":"none","r":1},"17,9":{"t":"ash","k":"none","r":1},"18,9":{"t":"ruin","k":"none","r":1},"19,9":{"t":"ruin","k":"none","r":1},"20,9":{"t":"ash","k":"none","r":1},"21,9":{"t":"ash","k":"none","r":1},"22,9":{"t":"ruin","k":"none","r":1},"23,9":{"t":"ruin","k":"none","r":1},"24,9":{"t":"ash","k":"none","r":1},"25,9":{"t":"rad","k":"none","r":1},"26,9":{"t":"rad","k":"none","r":2,"b":"Výzkumná stanice Kestrel, zatracena na začátku \"Poslední války\". Vedla výzkum Projektu Arcturus.","m":"lab","n":"Stanice Kestrel"},"27,9":{"t":"rad","k":"none","r":1},"28,9":{"t":"ash","k":"none","r":1},"29,9":{"t":"ash","k":"none","r":1},"0,10":{"t":"sea","k":"none","r":1},"1,10":{"t":"sea","k":"none","r":1},"2,10":{"t":"high","k":"none","r":1},"3,10":{"t":"high","k":"none","r":1},"4,10":{"t":"high","k":"none","r":1},"5,10":{"t":"high","k":"none","r":1},"6,10":{"t":"high","k":"none","r":1},"7,10":{"t":"ash","k":"none","r":1},"8,10":{"t":"ash","k":"fmt93cvsl","r":1},"9,10":{"t":"crater","k":"fmt93cvsl","r":1},"10,10":{"t":"ash","k":"fmt93cvsl","r":1},"11,10":{"t":"ash","k":"none","r":1},"12,10":{"t":"ash","k":"none","r":1},"13,10":{"t":"ash","k":"none","r":1},"14,10":{"t":"ash","k":"none","r":2},"15,10":{"t":"ash","k":"none","r":2},"16,10":{"t":"ruin","k":"none","r":2,"m":"enclave","n":"Kemp Liptus"},"17,10":{"t":"ash","k":"none","r":1},"18,10":{"t":"ruin","k":"none","r":1},"19,10":{"t":"ruin","k":"none","r":1},"20,10":{"t":"ruin","k":"none","r":1},"21,10":{"t":"ash","k":"none","r":1},"22,10":{"t":"ruin","k":"none","r":1},"23,10":{"t":"ruin","k":"none","r":1},"24,10":{"t":"ruin","k":"none","r":1},"25,10":{"t":"ash","k":"none","r":1},"26,10":{"t":"rad","k":"none","r":1},"27,10":{"t":"rad","k":"none","r":1},"28,10":{"t":"ash","k":"none","r":1},"29,10":{"t":"ash","k":"none","r":1},"0,11":{"t":"sea","k":"none","r":1},"1,11":{"t":"high","k":"none","r":1},"2,11":{"t":"high","k":"none","r":1},"3,11":{"t":"high","k":"none","r":1},"4,11":{"t":"high","k":"none","r":1},"5,11":{"t":"high","k":"none","r":1},"6,11":{"t":"ash","k":"none","r":1},"7,11":{"t":"ash","k":"none","r":1},"8,11":{"t":"ash","k":"fmt93cvsl","r":1},"9,11":{"t":"ash","k":"fmt93cvsl","r":1},"10,11":{"t":"ash","k":"none","r":1},"11,11":{"t":"ash","k":"none","r":1},"12,11":{"t":"ash","k":"none","r":1},"13,11":{"t":"ash","k":"none","r":2},"14,11":{"t":"ash","k":"none","r":2,"b":"Váš nový domov po době této mise. Zařízen vším co Occasie může nabídnout.","m":"fob","n":"Předsunutá Základa Voyager"},"15,11":{"t":"ash","k":"none","r":2},"16,11":{"t":"ash","k":"none","r":1},"17,11":{"t":"ash","k":"none","r":1},"18,11":{"t":"ruin","k":"none","r":1},"19,11":{"t":"ruin","k":"none","r":1},"20,11":{"t":"ash","k":"none","r":1},"21,11":{"t":"ash","k":"none","r":1},"22,11":{"t":"ash","k":"none","r":1},"23,11":{"t":"ruin","k":"none","r":1},"24,11":{"t":"ruin","k":"none","r":1},"25,11":{"t":"ash","k":"none","r":1},"26,11":{"t":"ash","k":"none","r":1},"27,11":{"t":"ash","k":"none","r":1},"28,11":{"t":"ash","k":"none","r":1},"29,11":{"t":"ash","k":"none","r":1},"0,12":{"t":"sea","k":"none","r":1},"1,12":{"t":"sea","k":"none","r":1},"2,12":{"t":"high","k":"none","r":1},"3,12":{"t":"tundra","k":"none","r":1},"4,12":{"t":"tundra","k":"none","r":1},"5,12":{"t":"tundra","k":"none","r":1},"6,12":{"t":"ash","k":"none","r":1},"7,12":{"t":"ash","k":"none","r":1},"8,12":{"t":"ash","k":"none","r":1},"9,12":{"t":"ash","k":"none","r":1},"10,12":{"t":"ash","k":"none","r":1},"11,12":{"t":"ash","k":"none","r":1},"12,12":{"t":"ash","k":"none","r":1},"13,12":{"t":"ash","k":"none","r":1},"14,12":{"t":"ash","k":"none","r":3,"b":"Konvoj se zásobami měl dorazit do Středostanice 4 ale ztratil kontakt.","m":"unknown","n":"Zásobovací Konvoj"},"15,12":{"t":"ash","k":"none","r":2},"16,12":{"t":"ash","k":"none","r":1},"17,12":{"t":"ash","k":"none","r":1},"18,12":{"t":"ash","k":"none","r":1},"19,12":{"t":"ash","k":"none","r":1},"20,12":{"t":"ash","k":"none","r":1},"21,12":{"t":"ash","k":"none","r":1},"22,12":{"t":"ruin","k":"none","r":3,"b":"???","m":"unknown"},"23,12":{"t":"ash","k":"none","r":1},"24,12":{"t":"crater","k":"none","r":1},"25,12":{"t":"crater","k":"none","r":1},"26,12":{"t":"ash","k":"none","r":1},"27,12":{"t":"ash","k":"none","r":1},"28,12":{"t":"ash","k":"none","r":1},"29,12":{"t":"ash","k":"none","r":1},"0,13":{"t":"sea","k":"none","r":1},"1,13":{"t":"tundra","k":"none","r":1},"2,13":{"t":"tundra","k":"none","r":1},"3,13":{"t":"ash","k":"none","r":1},"4,13":{"t":"ash","k":"none","r":1},"5,13":{"t":"ash","k":"none","r":1},"6,13":{"t":"ash","k":"none","r":1},"7,13":{"t":"ash","k":"none","r":1},"8,13":{"t":"ash","k":"none","r":1},"9,13":{"t":"ash","k":"none","r":1},"10,13":{"t":"ash","k":"none","r":1},"11,13":{"t":"ash","k":"none","r":1},"12,13":{"t":"ash","k":"none","r":1},"13,13":{"t":"ash","k":"none","r":1},"14,13":{"t":"ash","k":"none","r":1},"15,13":{"t":"ash","k":"none","r":1},"16,13":{"t":"ash","k":"none","r":1},"17,13":{"t":"ash","k":"none","r":1},"18,13":{"t":"ash","k":"none","r":1},"19,13":{"t":"ash","k":"none","r":1},"20,13":{"t":"ash","k":"none","r":1},"21,13":{"t":"ash","k":"none","r":1},"22,13":{"t":"ash","k":"none","r":1},"23,13":{"t":"ash","k":"none","r":1},"24,13":{"t":"ash","k":"none","r":1},"25,13":{"t":"ash","k":"none","r":1},"26,13":{"t":"ash","k":"none","r":1},"27,13":{"t":"ash","k":"none","r":1},"28,13":{"t":"ash","k":"none","r":1},"29,13":{"t":"ash","k":"none","r":1},"0,14":{"t":"sea","k":"none","r":1},"1,14":{"t":"tundra","k":"none","r":1},"2,14":{"t":"ash","k":"none","r":1},"3,14":{"t":"ash","k":"none","r":1},"4,14":{"t":"ash","k":"none","r":1},"5,14":{"t":"ruin","k":"none","r":1},"6,14":{"t":"ruin","k":"none","r":1},"7,14":{"t":"ash","k":"none","r":1},"8,14":{"t":"ash","k":"none","r":1},"9,14":{"t":"ash","k":"none","r":1},"10,14":{"t":"ash","k":"none","r":1},"11,14":{"t":"ash","k":"none","r":1},"12,14":{"t":"ash","k":"none","r":1},"13,14":{"t":"ash","k":"none","r":1},"14,14":{"t":"ash","k":"none","r":1},"15,14":{"t":"ruin","k":"none","r":1},"16,14":{"t":"ruin","k":"none","r":1},"17,14":{"t":"ruin","k":"none","r":1},"18,14":{"t":"ash","k":"none","r":1},"19,14":{"t":"ash","k":"none","r":1},"20,14":{"t":"ruin","k":"none","r":1},"21,14":{"t":"ash","k":"none","r":1},"22,14":{"t":"ash","k":"none","r":1},"23,14":{"t":"ash","k":"none","r":1},"24,14":{"t":"ash","k":"none","r":1},"25,14":{"t":"ash","k":"none","r":1},"26,14":{"t":"ruin","k":"none","r":1},"27,14":{"t":"ash","k":"none","r":1},"28,14":{"t":"ash","k":"none","r":1},"29,14":{"t":"ash","k":"none","r":1},"0,15":{"t":"sea","k":"none","r":1},"1,15":{"t":"ash","k":"none","r":1},"2,15":{"t":"ash","k":"none","r":1},"3,15":{"t":"ash","k":"none","r":1},"4,15":{"t":"ash","k":"none","r":1},"5,15":{"t":"ruin","k":"none","r":1},"6,15":{"t":"ash","k":"none","r":1},"7,15":{"t":"ash","k":"none","r":1},"8,15":{"t":"ash","k":"none","r":1},"9,15":{"t":"ruin","k":"none","r":2,"b":"Převálečná metropolis o původním počtu 3 milionů obyvatel zredukovaná na ruiny a suť v bitvě o Rangon City v roce 2355. Nyní přeživší kolonie pozůstalých obyvatel s neutrální vazbou na Occasii.","m":"enclave","n":"Rangon City"},"10,15":{"t":"ash","k":"none","r":1},"11,15":{"t":"ash","k":"none","r":1},"12,15":{"t":"ash","k":"none","r":1},"13,15":{"t":"ash","k":"none","r":1},"14,15":{"t":"ash","k":"none","r":1},"15,15":{"t":"ash","k":"none","r":1},"16,15":{"t":"ruin","k":"none","r":1},"17,15":{"t":"ash","k":"none","r":1},"18,15":{"t":"ash","k":"none","r":1},"19,15":{"t":"ash","k":"none","r":1},"20,15":{"t":"ruin","k":"none","r":1},"21,15":{"t":"ash","k":"none","r":1},"22,15":{"t":"ash","k":"none","r":1},"23,15":{"t":"ash","k":"none","r":1},"24,15":{"t":"ash","k":"none","r":1},"25,15":{"t":"ruin","k":"none","r":1},"26,15":{"t":"ruin","k":"none","r":1},"27,15":{"t":"ash","k":"none","r":1},"28,15":{"t":"ash","k":"none","r":1},"29,15":{"t":"ash","k":"none","r":1},"0,16":{"t":"sea","k":"none","r":1},"1,16":{"t":"sea","k":"none","r":1},"2,16":{"t":"sea","k":"none","r":1},"3,16":{"t":"ash","k":"none","r":2},"4,16":{"t":"ash","k":"none","r":2},"5,16":{"t":"ash","k":"none","r":2},"6,16":{"t":"ash","k":"none","r":1},"7,16":{"t":"ash","k":"none","r":1},"8,16":{"t":"ash","k":"none","r":1},"9,16":{"t":"ash","k":"none","r":2},"10,16":{"t":"ash","k":"none","r":1},"11,16":{"t":"crater","k":"none","r":1},"12,16":{"t":"crater","k":"none","r":1},"13,16":{"t":"ash","k":"none","r":1},"14,16":{"t":"ash","k":"none","r":1},"15,16":{"t":"ash","k":"none","r":1},"16,16":{"t":"ash","k":"none","r":1},"17,16":{"t":"ash","k":"none","r":1},"18,16":{"t":"ash","k":"none","r":1},"19,16":{"t":"ash","k":"none","r":1},"20,16":{"t":"ash","k":"none","r":1},"21,16":{"t":"tundra","k":"none","r":1},"22,16":{"t":"tundra","k":"none","r":1},"23,16":{"t":"ash","k":"none","r":1},"24,16":{"t":"tundra","k":"none","r":1},"25,16":{"t":"ash","k":"none","r":1},"26,16":{"t":"ash","k":"none","r":1},"27,16":{"t":"ash","k":"none","r":1},"28,16":{"t":"ash","k":"none","r":1},"29,16":{"t":"tundra","k":"blue","r":2,"m":"fob"},"0,17":{"t":"sea","k":"blue","r":1},"1,17":{"t":"sea","k":"blue","r":1},"2,17":{"t":"sea","k":"blue","r":1},"3,17":{"t":"ash","k":"blue","r":2,"m":"fob"},"4,17":{"t":"ash","k":"blue","r":2},"5,17":{"t":"ash","k":"blue","r":2,"m":"fob"},"6,17":{"t":"ash","k":"blue","r":2},"7,17":{"t":"ash","k":"blue","r":2},"8,17":{"t":"crater","k":"none","r":2},"9,17":{"t":"ash","k":"none","r":1},"10,17":{"t":"ash","k":"none","r":1},"11,17":{"t":"ash","k":"none","r":2},"12,17":{"t":"ash","k":"none","r":2},"13,17":{"t":"ash","k":"none","r":1},"14,17":{"t":"ash","k":"none","r":1},"15,17":{"t":"ash","k":"none","r":1},"16,17":{"t":"ash","k":"none","r":1},"17,17":{"t":"ash","k":"none","r":2},"18,17":{"t":"ash","k":"none","r":2},"19,17":{"t":"ash","k":"none","r":2},"20,17":{"t":"tundra","k":"none","r":2},"21,17":{"t":"tundra","k":"none","r":1},"22,17":{"t":"tundra","k":"none","r":1},"23,17":{"t":"forest","k":"blue","r":2},"24,17":{"t":"ash","k":"blue","r":2},"25,17":{"t":"ash","k":"none","r":2},"26,17":{"t":"ash","k":"none","r":2},"27,17":{"t":"ash","k":"blue","r":2},"28,17":{"t":"tundra","k":"blue","r":2},"29,17":{"t":"tundra","k":"blue","r":2},"0,18":{"t":"sea","k":"blue","r":1},"1,18":{"t":"sea","k":"blue","r":1},"2,18":{"t":"sea","k":"blue","r":1},"3,18":{"t":"ruin","k":"blue","r":2,"m":"enclave","n":"Agarpolis"},"4,18":{"t":"ash","k":"blue","r":2},"5,18":{"t":"ash","k":"blue","r":2},"6,18":{"t":"ash","k":"blue","r":2},"7,18":{"t":"ash","k":"blue","r":2},"8,18":{"t":"ash","k":"blue","r":2},"9,18":{"t":"ash","k":"blue","r":2},"10,18":{"t":"ash","k":"blue","r":2},"11,18":{"t":"ash","k":"blue","r":2},"12,18":{"t":"ash","k":"blue","r":2},"13,18":{"t":"ash","k":"blue","r":2},"14,18":{"t":"ash","k":"none","r":1},"15,18":{"t":"ash","k":"none","r":1},"16,18":{"t":"ash","k":"none","r":1},"17,18":{"t":"ash","k":"blue","r":2},"18,18":{"t":"ash","k":"blue","r":2},"19,18":{"t":"ash","k":"blue","r":2,"m":"fob","n":"Základna Kotvia"},"20,18":{"t":"ash","k":"blue","r":2},"21,18":{"t":"forest","k":"blue","r":2},"22,18":{"t":"forest","k":"blue","r":2},"23,18":{"t":"forest","k":"blue","r":2},"24,18":{"t":"forest","k":"blue","r":2},"25,18":{"t":"ash","k":"blue","r":2},"26,18":{"t":"ash","k":"blue","r":2},"27,18":{"t":"ash","k":"blue","r":2},"28,18":{"t":"tundra","k":"blue","r":2},"29,18":{"t":"tundra","k":"blue","r":2},"0,19":{"t":"tundra","k":"blue","r":2},"1,19":{"t":"ruin","k":"blue","r":2,"m":"enclave","n":"Seamuth"},"2,19":{"t":"tundra","k":"blue","r":2},"3,19":{"t":"tundra","k":"blue","r":2},"4,19":{"t":"tundra","k":"blue","r":2},"5,19":{"t":"ash","k":"blue","r":2},"6,19":{"t":"ash","k":"blue","r":2},"7,19":{"t":"ash","k":"blue","r":2},"8,19":{"t":"ash","k":"blue","r":2},"9,19":{"t":"ash","k":"blue","r":2},"10,19":{"t":"ash","k":"blue","r":2},"11,19":{"t":"ash","k":"blue","r":2},"12,19":{"t":"ash","k":"blue","r":2},"13,19":{"t":"ash","k":"blue","r":2},"14,19":{"t":"ash","k":"blue","r":2},"15,19":{"t":"ash","k":"blue","r":2},"16,19":{"t":"ash","k":"blue","r":2},"17,19":{"t":"ash","k":"blue","r":2},"18,19":{"t":"tundra","k":"blue","r":2},"19,19":{"t":"tundra","k":"blue","r":2},"20,19":{"t":"ash","k":"blue","r":2},"21,19":{"t":"forest","k":"blue","r":2},"22,19":{"t":"forest","k":"blue","r":2},"23,19":{"t":"forest","k":"blue","r":2},"24,19":{"t":"forest","k":"blue","r":2},"25,19":{"t":"ash","k":"blue","r":2},"26,19":{"t":"ash","k":"blue","r":2},"27,19":{"t":"ash","k":"blue","r":2},"28,19":{"t":"tundra","k":"blue","r":2},"29,19":{"t":"tundra","k":"blue","r":2}},"directives":[],"wiki":{"entries":[{"t":"Šedá Zóna","c":"Geography","b":"Nárazníková zóna která se táhne napříč [Krant|Krantem] o výšce zhruba 70km podél celé jeho šíře. Po demilitarizaci obou stran v rámci [Agarpolis Dohoda|Agarpolis Dohody] zde vzniklo vakuum které zaplnilo bezpráví a lovci příležitostí. Počet obyvatel zůstalých v zóně se odhaduje v nízkých milionech primárně koncentrovaných v ruinách metropolitních center a venkovských enkláv."},{"t":"Rumea","c":"Geography","b":"Východní region na Vesperu, Rumea je jedním z dvou zemských koridorů spojující [Kolvath] a [Occasia|Ocassii]. Na šíři má délku 1521km. Oplývá velkou diverzitou planin, vysočin a lesů protkaných meandry a skalními útvary."},{"t":"Agarpolis Dohoda","c":"History","b":"Jmenovaná dle Occasijské metropole na severním [Krant|Krantu] ve kterém byla tato dohoda o příměří podepsána 24. srpna 2372 mezi [Kolvath|Kolvathem] a [Occasia|Occasií]. Podmínky dohody stanovily 5 let zemského příměří v Krantu ode dne podpisu smlouvy. Příměří se týká i námořních a vzdušných operací nad Krantem včetně průzkumných operací. Konvenční konflikt v [Rumea|Rumei] nadále pokračuje. Dohoda ustanovila vznik nárazníkové zóny lidově známá jako \"[Šedá Zóna]\" mezi oběma státy o minimální vzdálenosti 70km a její převážné demilitarizaci. Obě strany se shodly, že fronta na Krantu se dostala do bodu mrazu a žádná strana neměla navrch. Pro obě strany vypadá, že se fronta znova otevře po skončení příměří, nové zásobovací linie a obranné základny jsou uváděny to provozuschopného stavu."},{"t":"Poslední válka","c":"History","b":"Ozbrojený konflikt mezi [Kolvath|Kolvathem] a [Occasia|Ocasiií] který začal předběžným útokem ze strany [Kolvath|Kolvathu] v roce 2347 v reakci na kontaminační únik [Zhouba|Zhouby] ze [Stanice Kestrel] v roce 2346 a následnému rozpadu diplomatických relací kvůli způsobené rozsáhlé neúrodě a hladomoru. Ačkoliv se nepodařilo zjistit přesnou příčinu úniku a zda-li v tom figurovaly zpravodajské složky z obou stran ([BSO] nebo [MZK]), relace již byly na bodu mrazu před vypuknutím otevřeného boje a obě strany aktivně zbrojily dekády proti sobě. Názvu \"Poslední válka\" získal tento konflikt primárně jeho velikostí a počtem obětí a zkázy. Odhadem expertů zahynulo mezi oběma stranami v přepočtu 1 bilión obyvatel a dalších 2 bylo vysídleno z postihnutých oblastí. Přestože se válka přesouvá do 30. výročí svého trvání, obě strany nejsou ochotny přistoupit k ukončení bojů vyjma krátkodobého příměří v rámci [Agarpolis dohoda|Agarpolis dohody]."},{"t":"VzSO","c":"History","b":"Vzdušné síly Occasie (zkr. VzSO) jsou jedním ze tří branží centrálního velení ozbrojených sil. Rozdělené na dvě velitelství, Severní a Jižní, primární offenzivní kapacity jsou koncentrovány na severu proti Kolvathu. Jižní velitelství zařizuje logistické zázemí, údržbu flotily a search & rescue operace. Pod VzSO spadají i raketové síly, pozičně situovány na jihu daleko od dosahu strategických bombardérů Kolvathu."},{"t":"Projekt Arcturus","c":"History","b":"Zahájen v roce 2310 po dekádovém summitu mezi Occasií a Kolvathem za účelem eradikace [Zhouba|Zhouby], byla to dosud největší socio-ekonomicko-vědecká spolupráce mezi oběma státy. Kooperace vyústila v sérii labolatoří postavených v [Krant] regionu a značném sdílení civilních technologií obou stran. Po kontaminačním úniku experimentálních prvků [Zhouba|Zhouby] (příčina neznámá) v roce 2346 a následné ekologické katastrofě byla spolupráce pozastavena a po vypuknutí [Poslední válka|Poslední války] o rok později natrvalo zatracena."},{"t":"Vesper","c":"Geography","b":"Systém Aurelius\nHlavní hvězda: Aurelius, žlutá hvězda hlavní posloupnosti spektrální třídy G2V\nVzdálenost od Arcturu: přibližně 4.1 světelného roku\nPlaneta: Vesper, třetí hlavní planeta systému\nOběžná dráha: 1.00 AU\nRok: Přibližně 365 dní\n\n-Geografie-\nVesper je rozlehlá oceánská superplaneta s nezvykle nízkou průměrnou hustotou a povrchovou gravitací blízkou jednomu standardnímu g. Její nitro ukrývá hluboký, na vodu bohatý plášť, nad nímž leží poměrně tenká a rozlámaná kontinentální kůra.\n\nPovrchu světa dominuje Vesperský oceán: chladný, téměř celoplanetární oceán přerušovaný vulkanickými souostrovími, podmořskými hřbety a dvěma hlavními pevninami — Cassem na jihu a Brumou na severu. Cassus je starší, a mírnější kontinent; historické centrum osídlení, zemědělství a lehkého průmyslu. Bruma je obdobná tvarem, avšak značně chladnější: severní štít vysokých plošin, fjordových pobřeží, vnitrozemských moří a sezónního ledu. S Cassem jsou spojeni zemsky mezi dvěma regiony [Krant] a [Rumea]."},{"t":"Occasia","c":"Geography","b":"Occasia (vysloveno Okásie - officiálně Occasijská Republika), je megastátem na jižním polokouli [Vesper|Vesperu] na kontinentu [Cassus]. Na dlouhou historii Vesperu je to mladá republika která vznikla po dlouhém procesu diplomacie mezi městskými státy a kraji v roce 1975 za účelem spolupráce a prosperity. Occasii vyneslo do dob prosperity hlavně pokrok v námořních technologiích, průlom v těžbě v hlubokých vodách, investice do rozšíření biotechnologií a agrárního průmyslu díky nimž populace republiky vyrostla z 1 do 3 biliónů za pouhých 150 let. Lehký průmysl, zemědělství, a výroba a výzkum špičkových technologií jsou výhradně silnou stránkou Occasie která využila jejich potenciálu k podpoře rostoucího obyvatelstva a armády."},{"t":"Kolvath","c":"Geography","b":"Kolvath (oficiálně Federativní Republika Kolvath), je megastát nacházející se na severní polokouli [Vesper|Vesperu] na kontinentě Bruma. První zmínky o vzniku federace sahají zpátky do roku 2050 kdy první pokroky v technologiích umožnilo prvním osadníkům dalekosáhlé výpravy na mrazivý sever Brumy a založení prvních permanentních osad. V rámci vývoje za poslední dvě století se Kolvath přeměnil primárně v centrálně řízenou republiku a federace zůstala jménem. Kolvath obývá zhruba 2.5 biliónů obyvatel (předválečný cenzus) primárně na jeho jižní části sousedící s Occasií. Je domovem silně industrializovaného těžkého průmyslu, hlubokého osvojení geotermální technologie a těžby v arktických podmínkách a vlastní dobře propojenou železniční síť. Industrializace byla silnou stránkou Kolvathu, který dokázal čerpat nezměrné přírodní zdroje nacházející se na severu planety pod ledovým krytem."},{"t":"Krant","c":"Geography","b":"Jeden ze dvou zemských koridorů na Vesperu který propojuje [Cassus] a [Bruma] megakontinenty na [Vesper|Vesperu]. Se šířkou 483km, Krant je bohatý na černozem, byl tedy ideálním kandidátem na to se stát obilnicí v dobách prosperity pro oba státy. Sloužil i jako hlavní logistický koridor pro směnný obchod mezi [Kolvath|Kolvathem] a [Occasia|Occasií]. Předválečná populace regionu pro obě velmoce činila zhruba 300 milionů obyvatel. Po vypuknutí [Poslední válka|války] v roce 2347 se Krant ocitl v středobodu prvních bitev. V roce 2372 byla podepsána [Agarpolis Dohoda] která zmrazila dosavadní linii kontaktu (pouze) v Krantu v napjatém příměří na 5 let. V rámci dohody byla ustanovena tzv. \"[Šedá Zóna]\" dělící oba státy v tomto regionu."},{"t":"MZK","c":"Misc","b":"Ministerstvo Zpravodajství Kolvath (zkráceně MZK) je zpravodajským orgánem Kolvathu. Je přímým rivalem [BSO] a jelikož vzniklo později než [BSO], přebralo své operační techniky přímo od nich."},{"t":"BSO","c":"Misc","b":"Bezpečnostní Služba Occasie (zkráceně BSO) je hlavní zpravodajská paže Occasie. Založena za dob první republiky má za sebou dlouhou historii vlivu na technologický vývoj a informační přehled na jižním kontinentu Occasie. Její schopnosti jsou přímým rivalem [MZK]."},{"t":"Zhouba","c":"History","b":"Prvně spatřena v roce 2301 na jižní části Occasie, Zhouba jako taková postihla prvně obiloviny a v dalších dekádách se postupně začala mutovat a šířit na ostatní plodiny. Původem neznámá, první teorie o jejím vývoji a šíření padly na [Kolvath], [BSO] ovšem tato tvrzení zpochybnila, nic nenasvědčovalo nekalému jednání ze strany Kolvathu. Na společném dekádovém summitu v roce 2310 [Kolvath] otevřel diskusi o ekologických katastrofách, jelikož evidentně Zhouba postihla i [Kolvath] v prvních letech nového století.\nSpolupráce v rámci průzkumu Zhouby a jejím zpětném inženýrství vyústila v [Projekt Arcturus]. První labolatoř [Stanice Kolvasia] byla dostavena v roce 2320 a do roku 2347 byla jedním z opěrných bodů projektu. Další důležitou stanicí v rámci projektu byla [Stanice Kestrel] a ... [KLASIFIKOVÁNO]"}],"sites":[{"t":"Základna Železný Kříž","x":"1202","m":"red","b":"Hlavní logistický uzel a vojenská letecká základna a pevnost Kolvathu v Krant regionu. Silně opevněná, vyzbrojená protiletadlovou ochranou a klíčovým bodem obrany.","k":false},{"t":"Stanice Kolvasia","x":"1408","m":"lab","b":"První výzkumná stanice Projektu Arcturus vybudovaná v roce 2320 a uvedena do provozu o rok později vznikla jako společné úsilí obou národních států. Stanice byla tedy pokřtěna spojením obou jejich jmen - Kolvathu a Occasia. Po vypuknutí války v roce 2347 byla značná část stanice zničena sabotáží obou týmů ve snaze znemožnit druhé straně možnost evakuace důležitých dokumentů. Dle informací z průzkumných letů vypadá stanice opuštěně.","k":false},{"t":"Stanice Kestrel","x":"2710","m":"lab","b":"Výzkumná stanice Kestrel, zatracena na začátku \"Poslední války\". Vedla výzkum Projektu Arcturus.","k":false},{"t":"Kemp Liptus","x":"1711","m":"enclave","b":"","k":false},{"t":"Předsunutá Základa Voyager","x":"1512","m":"fob","b":"Váš nový domov po době této mise. Zařízen vším co Occasie může nabídnout.","k":false},{"t":"Zásobovací Konvoj","x":"1513","m":"unknown","b":"Konvoj se zásobami měl dorazit do Středostanice 4 ale ztratil kontakt.","k":true},{"t":"Rangon City","x":"1016","m":"enclave","b":"Převálečná metropolis o původním počtu 3 milionů obyvatel zredukovaná na ruiny a suť v bitvě o Rangon City v roce 2355. Nyní přeživší kolonie pozůstalých obyvatel s neutrální vazbou na Occasii.","k":false},{"t":"","x":"3017","m":"fob","b":"","k":false},{"t":"","x":"0418","m":"fob","b":"","k":false},{"t":"","x":"0618","m":"fob","b":"","k":false},{"t":"Agarpolis","x":"0419","m":"enclave","b":"","k":false},{"t":"Základna Kotvia","x":"2019","m":"fob","b":"","k":false},{"t":"Seamuth","x":"0220","m":"enclave","b":"","k":false}]},"theme":"malachite","themeVars":{},"themeCanvas":{"void":"#07120d","edge":"#1d3a2e","fog":"#173029","wave":"#5fd39a","grade":[44,122,88,0.15],"rulerBg":"#0c1c15","tickMaj":"#3d6a58","tickMin":"#1c3a2e","rulerText":"#85ab97","waveBg":"#08150f","waveMid":"#1c3a2b","waveSel":"rgba(79,191,143,.22)","head":"#e8f6ec","placeholder":"#4a6b5b"},"themes":{"malachite":{},"slate":{"--void":"#0b1116","--panel":"#151f27","--panel2":"#1b2831","--panel3":"#0e161c","--line":"#2b3b47","--line2":"#1c2830","--bone":"#93a6ae","--dim":"#61757f","--bright":"#d5e0e4","--accent":"#55919f","--accent-bg":"#1f3039","--accent-hi":"#8fd8e8","--accent-soft":"rgba(85,145,159,.14)","--amber":"#c9924a","--oxide":"#b8542a","--trough":"#0f171d","--thumb":"#2f414e","--thumb-hi":"#3f5766","--float":"rgba(17,26,33,.95)"},"cinnabar":{"--void":"#120809","--panel":"#211012","--panel2":"#2c181a","--panel3":"#180b0d","--line":"#4a2529","--line2":"#2a1518","--bone":"#bd9691","--dim":"#8b625e","--bright":"#f2dcd7","--accent":"#e0573c","--accent-bg":"#3a1a14","--accent-hi":"#ff8f76","--accent-soft":"rgba(224,87,60,.15)","--amber":"#d9a04a","--oxide":"#c0442a","--trough":"#150a0b","--thumb":"#4a2a28","--thumb-hi":"#66403c","--float":"rgba(28,15,16,.95)"},"solar":{"--void":"#12100a","--panel":"#1e1a11","--panel2":"#292316","--panel3":"#171308","--line":"#4a3f22","--line2":"#2b2415","--bone":"#bbab7c","--dim":"#8a7a52","--bright":"#f2e7c8","--accent":"#e8b93c","--accent-bg":"#3a2f12","--accent-hi":"#ffe08a","--accent-soft":"rgba(232,185,60,.15)","--amber":"#e07a2b","--oxide":"#c85a2a","--trough":"#161208","--thumb":"#4d4126","--thumb-hi":"#6a5931","--float":"rgba(28,24,14,.95)"}},"themeCanvases":{"malachite":{"void":"#07120d","edge":"#1d3a2e","fog":"#173029","wave":"#5fd39a","grade":[44,122,88,0.15],"rulerBg":"#0c1c15","tickMaj":"#3d6a58","tickMin":"#1c3a2e","rulerText":"#85ab97","waveBg":"#08150f","waveMid":"#1c3a2b","waveSel":"rgba(79,191,143,.22)","head":"#e8f6ec","placeholder":"#4a6b5b"},"slate":{"void":"#0b1116","edge":"#243139","fog":"#212d36","wave":"#e0913f","grade":null,"rulerBg":"#111a20","tickMaj":"#4e6674","tickMin":"#26333d","rulerText":"#8ba3af","waveBg":"#0d1319","waveMid":"#33261a","waveSel":"rgba(70,132,150,.26)","head":"#f6ead2","placeholder":"#4a5b66"},"cinnabar":{"void":"#120809","edge":"#3d1f22","fog":"#301a1c","wave":"#ff7a5c","grade":[132,58,48,0.1],"rulerBg":"#1a0d0e","tickMaj":"#6b3a36","tickMin":"#331a1c","rulerText":"#b08a85","waveBg":"#140a0b","waveMid":"#3a1f18","waveSel":"rgba(224,87,60,.20)","head":"#ffeae4","placeholder":"#6b4a46"},"solar":{"void":"#12100a","edge":"#3d3319","fog":"#332a15","wave":"#ffc24d","grade":[168,132,44,0.15],"rulerBg":"#191408","tickMaj":"#6d5a2c","tickMin":"#33290f","rulerText":"#b3a074","waveBg":"#14100a","waveMid":"#3a2c12","waveSel":"rgba(232,185,60,.20)","head":"#fff4d8","placeholder":"#6b5c3a"}},"rivers":{"19,11|20,12":1,"19,12|20,12":1,"16,-1|17,0":1,"16,0|17,0":1,"16,1|17,1":1,"17,1|17,2":1,"17,2|18,2":1,"17,3|18,3":1,"18,3|18,4":1,"18,4|19,4":1,"18,5|19,4":1,"18,5|19,5":1,"18,5|19,6":1,"18,6|19,6":1,"19,13|20,14":1,"19,13|20,13":1,"19,14|20,14":1,"19,15|20,14":1,"20,14|20,15":1,"19,13|20,12":1,"19,11|20,11":1,"19,11|20,10":1,"20,15|21,14":1,"21,17|22,17":1,"22,18|23,18":1,"22,19|23,18":1,"22,19|23,19":1,"21,16|22,16":1,"20,15|21,15":1,"21,15|21,16":1,"19,10|20,10":1,"19,10|19,9":1,"18,9|19,9":1,"18,9|19,8":1,"18,8|19,8":1,"18,7|19,7":1,"18,7|19,6":1,"16,1|17,0":1,"17,3|18,2":1,"18,7|19,8":1,"21,17|22,16":1},"roads":{"23,3|24,4":1,"23,3|24,2":1,"23,1|24,2":1,"23,-1|23,0":1,"23,0|23,1":1,"23,0|24,0":1,"24,0|25,0":1,"25,0|25,1":1,"27,1|28,2":1,"26,1|27,1":1,"25,1|26,1":1,"18,18|19,18":1,"17,17|18,18":1,"16,16|17,16":1,"15,15|16,16":1,"17,16|17,17":1,"11,16|11,17":1,"11,16|12,16":1,"11,17|12,18":1,"11,19|12,18":1,"9,15|9,16":1,"10,16|11,16":1,"10,16|9,16":1,"7,17|8,17":1,"6,17|7,17":1,"8,17|9,16":1,"5,17|5,18":1,"5,17|6,17":1,"4,17|5,17":1,"3,18|3,19":1,"3,17|4,17":1,"3,17|3,18":1,"4,19|5,18":1,"3,19|4,19":1,"2,19|3,19":1,"1,19|2,19":1,"1,19|2,20":1,"4,19|4,20":1,"11,19|12,20":1,"19,19|20,20":1,"19,18|19,19":1,"11,-1|12,0":1,"10,-1|11,0":1,"11,-1|11,0":1,"11,0|12,0":1,"12,1|13,1":1,"11,1|12,0":1,"11,1|12,1":1,"10,1|9,1":1,"10,1|11,1":1,"10,0|11,0":1,"9,0|9,1":1,"8,-1|9,0":1,"10,0|9,0":1,"14,1|15,0":1,"15,0|16,0":1,"17,0|18,0":1,"18,-1|18,0":1,"13,1|14,1":1,"2,19|3,18":1,"20,13|21,13":1,"21,13|22,12":1,"16,0|17,0":1,"12,7|13,7":1},"crossings":{"16,1|17,0":"out","16,0|17,0":"bridge"},"factions":[{"id":"fmt93cvsl","name":"???","color":"#906c56","anon":true}]};
+var DATA = EMBEDDED;
+/* Only the chrome is translated. Site names, briefs and wiki bodies are the
+   GM's words and ship exactly as written, in whatever language they wrote them. */
+var STR={
+ cs:{regionMap:"Mapa regionu",region:"Region",closeup:"Detail",route:"Trasa",
+  clearRoute:"Zrušit trasu",briefings:"Hlášení",wiki:"Wiki",thisHex:"Tento hex",key:"Legenda",
+  clickHex:"Klikněte na hex v mapě",viewCloseup:"Zobrazit detail",backToRegion:"Zpět na region",
+  searchWiki:"Hledat ve wiki",sites:"Lokality",general:"Obecné",
+  nothingMatches:"Nic neodpovídá.",wikiEmpty:"Wiki je zatím prázdná.",
+  nothingCharted:"Zde není nic zaneseno",
+  fromAir:"Zaměřeno ze vzduchu. Nic dalšího v záznamech.",
+  observedOnly:"pouze pozorováno",noReport:"Zatím bez hlášení.",
+  seenFromAir:"Spatřeno ze vzduchu. Víc není známo.",
+  controlUnknown:"Kontrola neznámá",unknownGround:"Neprozkoumaný terén",
+  recorded:"Nahrané hlášení",undated:"bez data",live:"živé",
+  ter:{unsurveyed:"Neprozkoumáno",ice:"Ledový příkrov",tundra:"Otevřená půda",
+   ash:"Popel",ruin:"Ruiny",high:"Vysočina",sea:"Moře",crater:"Kráter",
+   forest:"Les",rad:"Zamořeno",road:"Cesta"},
+  mk:{fob:"Základna Occasie",lab:"Výzkumná stanice",enclave:"Enkláva",
+   red:"Základna Kolvathu",hazard:"Nebezpečí",cache:"Sklad / vrak",unknown:"Neznámá lokalita"},
+  fac:{none:"Bez kontroly",blue:"Kontrola Occasie",red:"Kontrola Kolvathu",contested:"Sporné"},
+  xing:{bridge:"Most, stojící",out:"Most, zničený",ford:"Brod",pontoon:"Pontonový most"},
+  river:"Řeka",track:"Stezka",
+  legTerrain:"Terén",legControl:"Kontrola",legSites:"Lokality",legWays:"Voda a cesty",
+  hexesEntered:"Prošlých hexů",onFoot:"Pěšky",vehicle:"Vozidlem",impassable:"neprůchodné",
+  hrs:"h",days:"d",wetCrossings:"× překročení řeky bez mostu či brodu",
+  dayNote:"Dny počítány po 10 hodinách pochodu.",measure:"Změřit trasu",
+  backToWiki:"Zpět na wiki",showOnMap:"Ukázat na mapě"},
+ en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
+  clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
+  clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
+  searchWiki:"Search the wiki",sites:"Sites",general:"General",
+  nothingMatches:"Nothing matches that.",wikiEmpty:"Nothing in the wiki yet.",
+  nothingCharted:"Nothing charted here",
+  fromAir:"Surveyed from the air. Nothing further on record.",
+  observedOnly:"observed only",noReport:"No report filed yet.",
+  seenFromAir:"Seen from the air. Nothing more is known.",
+  controlUnknown:"Control unknown",unknownGround:"Unknown ground",
+  recorded:"Recorded dispatch",undated:"undated",live:"live",
+  ter:{unsurveyed:"Unsurveyed",ice:"Ice sheet",tundra:"Open ground",ash:"Ash",
+   ruin:"Ruins",high:"Highland",sea:"Sea",crater:"Crater",forest:"Forest",
+   rad:"Contaminated",road:"Road"},
+  mk:{fob:"Occasia Base",lab:"Lab site",enclave:"Enclave",red:"Kolvath Base",
+   hazard:"Hazard",cache:"Cache / derelict",unknown:"Unknown site"},
+  fac:{none:"No control",blue:"Occasia control",red:"Kolvath control",contested:"Contested"},
+  xing:{bridge:"Bridge, standing",out:"Bridge, down",ford:"Ford",pontoon:"Pontoon"},
+  river:"River",track:"Track",
+  legTerrain:"Terrain",legControl:"Control",legSites:"Sites",legWays:"Water & ways",
+  hexesEntered:"Hexes entered",onFoot:"On foot",vehicle:"Vehicle",impassable:"impassable",
+  hrs:"h",days:"d",wetCrossings:"× river crossing with no bridge or ford",
+  dayNote:"Days assume 10 travel hours.",measure:"Measure a route",
+  backToWiki:"Back to wiki",showOnMap:"Show on map"}
+};
+var LOC="cs";
+try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
+function T(k){return (STR[LOC]&&STR[LOC][k])!==undefined?STR[LOC][k]:STR.en[k];}
+function TT(g,k,fb){var t=STR[LOC][g];return (t&&t[k])||(STR.en[g]&&STR.en[g][k])||fb||k;}
+var SQ3=Math.sqrt(3),SIZE=14,OX=SIZE*SQ3/2,OY=SIZE,TINT_A=0.22;
+var DW=20,DH=14,DTILE=8;
+var TER={unsurveyed:["#141d24","#111a20","#17222a"],ice:["#b3c4ce","#a2b5c0","#c6d3da"],
+tundra:["#5f7355","#516347","#6e8363"],ash:["#5a5348","#4e483e","#675e51"],
+ruin:["#5c5854","#6f6b66","#46433f","#7d7972"],high:["#798087","#696f77","#8b939a"],
+sea:["#2f4a5c","#26404f","#3a5a6d"],crater:["#2b2724","#201d1b","#3a3430"],
+forest:["#3c4d34","#314128","#485c3e"],rad:["#7a6a34","#695a2b","#8d7c41","#9c8a4a"],
+road:["#837868","#6f6558","#948877"]};
+var TNAME={unsurveyed:"Unsurveyed",ice:"Ice sheet",tundra:"Woodland",ash:"Open ground",ruin:"Ruins",
+high:"Highland",sea:"Sea",crater:"Crater",forest:"Forest",rad:"Contaminated",road:"Road"};
+var TRAVEL={unsurveyed:{w:2,v:0.5},ash:{w:1,v:0.2},tundra:{w:2,v:0.5},forest:{w:3,v:1},
+ice:{w:2,v:0.5},high:{w:3,v:1},ruin:{w:3,v:1},crater:{w:4,v:null},rad:{w:3,v:1},
+sea:{w:null,v:null},road:{w:1,v:0.5}};
+var TILES={ground:["#4c4741","#413c37","#565049"],snow:["#b3c4ce","#a4b6c1","#c6d3da"],
+rubble:["#6f6b66","#5b5854","#807b74"],wall:["#33302c","#2a2724","#3d3934"],
+floor:["#565049","#4a453f","#615a52"],water:["#364d5c","#2d4250","#415d6d"],
+track:["#837868","#6f6558","#948877"],scrub:["#47503f","#3b4335","#535d49"],
+rad:["#6b7538","#5a6330","#7e8942"],drop:["#1a1815","#121110","#232019"]};
+var BUILTIN={none:{name:"Neutral / grey",color:"#3a4a55"},blue:{name:"Blue control",color:"#3f7f95"},
+red:{name:"Red control",color:"#a8482a"},contested:{name:"Contested",color:"#b78a3c"}};
+var G={fob:".......|.#####.|.#...#.|.#.#.#.|.#...#.|.#####.|.......",
+lab:"...#...|..###..|.#####.|#######|.#####.|..###..|...#...",
+enclave:"..###..|.#####.|#######|#######|#######|.#####.|..###..",
+red:".......|.#####.|.#...#.|.#.#.#.|.#...#.|.#####.|.......",
+hazard:"...#...|..#.#..|..#.#..|.#.#.#.|.#...#.|#######|.......",
+cache:".......|.#####.|.#...#.|.#...#.|.#...#.|.#####.|.......",
+unknown:"..###..|.#...#.|.....#.|...##..|...#...|.......|...#..."};
+var MK={fob:{n:"Occasia Base",c:"#6fb4c4",g:"▣"},lab:{n:"Lab site",c:"#e3ecef",g:"◆"},
+enclave:{n:"Enclave",c:"#9fb894",g:"●"},red:{n:"Kolvath Base",c:"#cf5f2d",g:"▣"},
+hazard:{n:"Hazard",c:"#d8a154",g:"▲"},cache:{n:"Cache / derelict",c:"#8d9fa8",g:"□"},
+unknown:{n:"Unknown site",c:"#c2b18a",g:"?"}};
+var RIVER="#4d7f92",ROAD="#8a7d6a";
+var XING={bridge:{n:"Bridge, standing",c:"#c3cdd1",g:"╤"},out:{n:"Bridge, down",c:"#cf5f2d",g:"╨"},
+ford:{n:"Ford",c:"#9fb894",g:"≈"},pontoon:{n:"Pontoon",c:"#b9a98a",g:"≡"}};
+
+var pix=document.getElementById("pix"),lbl=document.getElementById("lbl");
+var pctx=pix.getContext("2d",{willReadFrequently:true}),lctx=lbl.getContext("2d");
+var LW=0,LH=0,owner=null,zoom=2,dzoom=4,mode="region",sel=null,detailHex=null;
+var flash=null,flashT=null;
+
+function fac(id){
+  if(BUILTIN[id])return BUILTIN[id];
+  var f=(DATA.factions||[]).filter(function(x){return x.id===id;})[0];
+  return f?{name:f.name,color:f.color,anon:!!f.anon}:BUILTIN.none;
+}
+/* Builtin names are chrome and translate; a custom faction's name is the GM's
+   word and doesn't. A faction the GM hasn't unmasked ships pre-muted with its
+   name already replaced, so there is nothing here to leak. */
+function facName(id){
+  if(BUILTIN[id])return TT("fac",id,BUILTIN[id].name);
+  var f=fac(id);return f.anon?"???":f.name;
+}
+function facCol(id){return fac(id).color;}
+function H(c,r){return DATA.hexes[c+","+r]||null;}
+function inB(c,r){return c>=0&&r>=0&&c<DATA.cols&&r<DATA.rows;}
+function hexToPixel(c,r){return {x:SIZE*SQ3*(c+0.5*(r&1))+OX,y:SIZE*1.5*r+OY};}
+function pixelToHex(x,y){
+  var px=x-OX,py=y-OY;
+  var q=(SQ3/3*px-py/3)/SIZE,rr=(2/3*py)/SIZE;
+  var cx=q,cz=rr,cy=-cx-cz;
+  var rx=Math.round(cx),ry=Math.round(cy),rz=Math.round(cz);
+  var dx=Math.abs(rx-cx),dy=Math.abs(ry-cy),dz=Math.abs(rz-cz);
+  if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;
+  return {col:rx+((rz-(rz&1))/2),row:rz};
+}
+function neighbor(c,r,e){
+  var o=r&1;
+  return e===0?[c+1,r]:e===1?(o?[c+1,r+1]:[c,r+1]):e===2?(o?[c,r+1]:[c-1,r+1]):
+         e===3?[c-1,r]:e===4?(o?[c,r-1]:[c-1,r-1]):(o?[c+1,r-1]:[c,r-1]);
+}
+function edgeVerts(c,r,e){
+  var ctr=hexToPixel(c,r),v=[],ix=[e,(e+1)%6],i;
+  for(i=0;i<2;i++){var a=Math.PI/180*(60*ix[i]-30);
+    v.push([ctr.x+SIZE*Math.cos(a),ctr.y+SIZE*Math.sin(a)]);}
+  return v;
+}
+function segForKey(k){
+  var ab=k.split("|").map(function(t){return t.split(",").map(Number);}),e;
+  for(e=0;e<6;e++){var n=neighbor(ab[0][0],ab[0][1],e);
+    if(n[0]===ab[1][0]&&n[1]===ab[1][1])return edgeVerts(ab[0][0],ab[0][1],e);}
+  return null;
+}
+function hash(x,y){
+  var h=(x*374761393+y*668265263)|0;
+  h=((h^(h>>>13))*1274126177)|0;h=h^(h>>>16);
+  return (h>>>0)/4294967296;
+}
+function rgb(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function pad(n){return n<10?"0"+n:""+n;}
+function coordOf(c,r){return pad(c+1)+pad(r+1);}
+function Z(){return mode==="region"?zoom:dzoom;}
+
+function sizeCanvas(){
+  if(mode==="region"){
+    LW=Math.ceil(SIZE*SQ3*(DATA.cols+0.5))+1;
+    LH=Math.ceil(SIZE*1.5*(DATA.rows-1)+SIZE*2)+1;
+    owner=new Int32Array(LW*LH);
+  }else{LW=DW*DTILE;LH=DH*DTILE;}
+  var z=Z();
+  pix.width=LW;pix.height=LH;
+  pix.style.width=(LW*z)+"px";pix.style.height=(LH*z)+"px";
+  lbl.width=LW*z;lbl.height=LH*z;
+  lbl.style.width=(LW*z)+"px";lbl.style.height=(LH*z)+"px";
+  var st=document.getElementById("stack");
+  st.style.width=(LW*z)+"px";st.style.height=(LH*z)+"px";
+  var lo=mode==="region"?1:2,hi=mode==="region"?6:8;
+  document.getElementById("zVal").textContent=z+"\u00d7";
+  document.getElementById("zOut").disabled=z<=lo;
+  document.getElementById("zIn").disabled=z>=hi;
+}
+function wrapLabel(text,maxCh,maxLines){
+  var words=String(text).trim().split(/\s+/),out=[],line="",i;
+  for(i=0;i<words.length;i++){
+    var wd=words[i];
+    while(wd.length>maxCh){
+      if(line){out.push(line);line="";}
+      out.push(wd.slice(0,maxCh));wd=wd.slice(maxCh);
+      if(out.length>=maxLines)return out.slice(0,maxLines);
+    }
+    var t=line?line+" "+wd:wd;
+    if(t.length<=maxCh)line=t;
+    else{if(line)out.push(line);line=wd;if(out.length>=maxLines)break;}
+  }
+  if(line&&out.length<maxLines)out.push(line);
+  return out.length?out.slice(0,maxLines):[String(text)];
+}
+function haloText(txt,x,y,fill,strength){
+  lctx.save();
+  lctx.shadowColor="rgba(5,9,12,.9)";lctx.shadowBlur=strength;
+  lctx.fillStyle=fill;
+  lctx.fillText(txt,x,y);lctx.fillText(txt,x,y);lctx.fillText(txt,x,y);
+  lctx.restore();
+  lctx.fillStyle=fill;lctx.fillText(txt,x,y);
+}
+function renderRegion(){
+  var img=pctx.createImageData(LW,LH),d=img.data;
+  var TC=themeCanvas();
+  var VOID=rgb(TC.void),EDGE=rgb(TC.edge),FOG=rgb(TC.fog),GR=TC.grade,cache={},tint={},k;
+  for(k in TER)cache[k]=TER[k].map(rgb);
+  var y,x,i,o,p;
+  for(y=0;y<LH;y++)for(x=0;x<LW;x++){
+    var h=pixelToHex(x+0.5,y+0.5);
+    owner[y*LW+x]=inB(h.col,h.row)?(H(h.col,h.row)?(h.row*DATA.cols+h.col):-2):-1;
+  }
+  for(y=0;y<LH;y++)for(x=0;x<LW;x++){
+    i=y*LW+x;o=owner[i];p=i*4;d[p+3]=255;
+    var rt=x+1<LW?owner[i+1]:-1,dn=y+1<LH?owner[i+LW]:-1;
+    if(o!==rt||o!==dn){d[p]=EDGE[0];d[p+1]=EDGE[1];d[p+2]=EDGE[2];continue;}
+    if(o===-1){d[p]=VOID[0];d[p+1]=VOID[1];d[p+2]=VOID[2];continue;}
+    if(o===-2){                                   /* charted grid, unknown ground */
+      var fn=hash(x,y),bp=Math.round(fn*7)-3,dz=((x+y)%5===0)?6:0;
+      d[p]=FOG[0]+bp+dz;d[p+1]=FOG[1]+bp+dz;d[p+2]=FOG[2]+bp+dz;continue;
+    }
+    var c=o%DATA.cols,r=(o-c)/DATA.cols,hx=H(c,r);
+    var sh=cache[hx.t]||cache.ash,n=hash(x,y);
+    var col=sh[Math.min(sh.length-1,Math.floor(n*sh.length))];
+    var R=col[0],Gc=col[1],B=col[2];
+    if(hx.k&&hx.k!=="none"&&hx.k!=="?"){
+      if(!tint[hx.k])tint[hx.k]=rgb(fac(hx.k).color);
+      var t=tint[hx.k];
+      R=Math.round(R*(1-TINT_A)+t[0]*TINT_A);
+      Gc=Math.round(Gc*(1-TINT_A)+t[1]*TINT_A);
+      B=Math.round(B*(1-TINT_A)+t[2]*TINT_A);
+    }
+    if(hx.k==="?"&&(((x-y)%7)+7)%7===0){   /* no reading, not confirmed neutral */
+      R=Math.round(R*0.87+9);Gc=Math.round(Gc*0.87+10);B=Math.round(B*0.87+13);
+    }
+    if(GR){
+      R=Math.round(R*(1-GR[3])+GR[0]*GR[3]);
+      Gc=Math.round(Gc*(1-GR[3])+GR[1]*GR[3]);
+      B=Math.round(B*(1-GR[3])+GR[2]*GR[3]);
+    }
+    d[p]=R;d[p+1]=Gc;d[p+2]=B;
+  }
+  pctx.putImageData(img,0,0);
+  drawFronts();drawWays();drawMarks();drawLabels();
+}
+function drawFronts(){
+  pctx.save();pctx.lineCap="round";
+  var c,r,e;
+  for(r=0;r<DATA.rows;r++)for(c=0;c<DATA.cols;c++){
+    var hx=H(c,r);if(!hx||!hx.k||hx.k==="none"||hx.k==="?")continue;
+    var ctr=hexToPixel(c,r),col=fac(hx.k).color;
+    for(e=0;e<6;e++){
+      var nb=neighbor(c,r,e),nh=inB(nb[0],nb[1])?H(nb[0],nb[1]):null;
+      if((nh&&nh.k?nh.k:"none")===hx.k)continue;
+      var v=edgeVerts(c,r,e);
+      var a=[v[0][0]+(ctr.x-v[0][0])*0.10,v[0][1]+(ctr.y-v[0][1])*0.10];
+      var b=[v[1][0]+(ctr.x-v[1][0])*0.10,v[1][1]+(ctr.y-v[1][1])*0.10];
+      pctx.strokeStyle="#0d1317";pctx.lineWidth=2.6;
+      pctx.beginPath();pctx.moveTo(a[0],a[1]);pctx.lineTo(b[0],b[1]);pctx.stroke();
+      pctx.strokeStyle=col;pctx.lineWidth=1.5;
+      pctx.beginPath();pctx.moveTo(a[0],a[1]);pctx.lineTo(b[0],b[1]);pctx.stroke();
+    }
+  }
+  pctx.restore();
+}
+function drawWays(){
+  pctx.save();pctx.lineCap="round";pctx.lineJoin="round";
+  Object.keys(DATA.roads||{}).forEach(function(k){
+    var ab=k.split("|").map(function(t){return t.split(",").map(Number);});
+    var p=hexToPixel(ab[0][0],ab[0][1]),q=hexToPixel(ab[1][0],ab[1][1]);
+    pctx.strokeStyle=ROAD;pctx.lineWidth=1.6;pctx.setLineDash([3,2]);
+    pctx.beginPath();pctx.moveTo(p.x,p.y);pctx.lineTo(q.x,q.y);pctx.stroke();
+  });
+  pctx.setLineDash([]);
+  Object.keys(DATA.rivers||{}).forEach(function(k){
+    var s=segForKey(k);if(!s)return;
+    pctx.strokeStyle="#1d3542";pctx.lineWidth=3.4;
+    pctx.beginPath();pctx.moveTo(s[0][0],s[0][1]);pctx.lineTo(s[1][0],s[1][1]);pctx.stroke();
+    pctx.strokeStyle=RIVER;pctx.lineWidth=2;
+    pctx.beginPath();pctx.moveTo(s[0][0],s[0][1]);pctx.lineTo(s[1][0],s[1][1]);pctx.stroke();
+  });
+  Object.keys(DATA.crossings||{}).forEach(function(k){
+    var s=segForKey(k);if(!s)return;
+    var type=DATA.crossings[k],col=XING[type].c;
+    var mx=(s[0][0]+s[1][0])/2,my=(s[0][1]+s[1][1])/2;
+    var dx=s[1][0]-s[0][0],dy=s[1][1]-s[0][1],len=Math.hypot(dx,dy)||1;
+    var nx=-dy/len,ny=dx/len,t;
+    if(type==="pontoon"){
+      pctx.strokeStyle="#12181c";pctx.lineWidth=3.4;
+      pctx.beginPath();pctx.moveTo(mx-nx*4,my-ny*4);pctx.lineTo(mx+nx*4,my+ny*4);pctx.stroke();
+      pctx.fillStyle=col;
+      for(t=-4;t<=4;t+=2)pctx.fillRect(Math.round(mx+nx*t)-1,Math.round(my+ny*t)-1,2,2);
+    }else if(type==="out"){
+      pctx.strokeStyle=col;pctx.lineWidth=1.4;pctx.beginPath();
+      pctx.moveTo(mx-nx*4-dx/len*1.6,my-ny*4-dy/len*1.6);pctx.lineTo(mx-nx*0.8,my-ny*0.8);
+      pctx.moveTo(mx+nx*0.8+dx/len*1.6,my+ny*0.8+dy/len*1.6);pctx.lineTo(mx+nx*4,my+ny*4);
+      pctx.stroke();
+    }else if(type==="ford"){
+      pctx.fillStyle=col;
+      for(t=-3;t<=3;t+=2)pctx.fillRect(Math.round(mx+nx*t)-0.5,Math.round(my+ny*t)-0.5,1.6,1.6);
+    }else{
+      pctx.strokeStyle="#12181c";pctx.lineWidth=3.6;
+      pctx.beginPath();pctx.moveTo(mx-nx*4,my-ny*4);pctx.lineTo(mx+nx*4,my+ny*4);pctx.stroke();
+      pctx.strokeStyle=col;pctx.lineWidth=1.8;
+      pctx.beginPath();pctx.moveTo(mx-nx*4,my-ny*4);pctx.lineTo(mx+nx*4,my+ny*4);pctx.stroke();
+    }
+  });
+  pctx.restore();
+}
+function drawMarks(){
+  var img=pctx.getImageData(0,0,LW,LH),d=img.data,c,r;
+  for(r=0;r<DATA.rows;r++)for(c=0;c<DATA.cols;c++){
+    var hx=H(c,r);if(!hx||!hx.m)continue;
+    var col=rgb(MK[hx.m].c),ctr=hexToPixel(c,r);
+    var gx=Math.round(ctr.x)-3,gy=Math.round(ctr.y)-3;
+    var rows=G[hx.m].split("|"),on=[],j,k2;
+    for(j=0;j<7;j++)for(k2=0;k2<7;k2++)if(rows[j][k2]==="#")on.push([gx+k2,gy+j]);
+    var set={};on.forEach(function(a){set[a[0]+":"+a[1]]=1;});
+    on.forEach(function(a){
+      var ax,by;
+      for(ax=-1;ax<=1;ax++)for(by=-1;by<=1;by++){
+        var nx=a[0]+ax,ny=a[1]+by;
+        if(nx<0||ny<0||nx>=LW||ny>=LH||set[nx+":"+ny])continue;
+        var p=(ny*LW+nx)*4;
+        d[p]=Math.round(d[p]*.2);d[p+1]=Math.round(d[p+1]*.2);d[p+2]=Math.round(d[p+2]*.22);
+      }
+    });
+    on.forEach(function(a){
+      if(a[0]<0||a[1]<0||a[0]>=LW||a[1]>=LH)return;
+      var p=(a[1]*LW+a[0])*4;
+      d[p]=col[0];d[p+1]=col[1];d[p+2]=col[2];
+    });
+  }
+  pctx.putImageData(img,0,0);
+}
+function placeLabels(jobs,slots){
+  var hard=[],soft=[];
+  function hit(a,b){return !(a.x2<=b.x1||a.x1>=b.x2||a.y2<=b.y1||a.y1>=b.y2);}
+  function clear(r,list){var i;for(i=0;i<list.length;i++)if(hit(r,list[i]))return false;return true;}
+  function rectOf(j,dy){
+    var pad=Math.max(2,j.fs*0.22),h=j.lines.length*j.lh;
+    return {x1:j.x-j.w/2-pad,x2:j.x+j.w/2+pad,
+            y1:j.y+dy-j.lh*0.72-pad,y2:j.y+dy+h-j.lh*0.72+pad,dy:dy};
+  }
+  jobs.forEach(function(j){if(j.soft)soft.push(rectOf(j,0));});
+  jobs.forEach(function(j){
+    if(j.soft)return;
+    var put=null,fb=null,i,r;
+    for(i=0;i<slots.length;i++){
+      r=rectOf(j,slots[i]*j.unit);
+      if(!clear(r,hard))continue;
+      if(!fb)fb=r;
+      if(clear(r,soft)){put=r;break;}
+    }
+    r=put||fb||rectOf(j,0);
+    hard.push(r);j.dy=r.dy;
+  });
+}
+function drawLabels(){
+  lctx.clearRect(0,0,lbl.width,lbl.height);
+  var z=Z(),F=getComputedStyle(document.body).fontFamily;
+  var fsC=Math.max(9,Math.round(3.2*z)),fsN=Math.max(11,Math.round(4.4*z));
+  var hexW=SIZE*SQ3*z,room=hexW>=fsC*4*0.62+6,c,r,jobs=[];
+  lctx.textAlign="center";
+  for(r=0;r<DATA.rows;r++)for(c=0;c<DATA.cols;c++){
+    var hx=H(c,r);if(!hx)continue;
+    var ctr=hexToPixel(c,r),x=ctr.x*z,y=ctr.y*z;
+    if(room){
+      lctx.font=fsC+"px "+F;
+      jobs.push({soft:true,x:x,y:y-SIZE*z*0.44,fs:fsC,lh:fsC*1.06,
+        w:lctx.measureText(coordOf(c,r)).width,lines:[coordOf(c,r)],
+        col:(hx.r>=3)?"rgba(228,238,242,.86)":"rgba(170,188,196,.6)",
+        blur:Math.max(3,fsC*0.55),sp:(z>=3?"0.6px":"0.35px")});
+    }
+    if(hx.n){
+      lctx.font="700 "+fsN+"px "+F;
+      var maxCh=Math.max(6,Math.floor((hexW*2.3)/(fsN*0.62)));
+      var lines=wrapLabel(hx.n,maxCh,3),w=0;
+      lines.forEach(function(l){w=Math.max(w,lctx.measureText(l).width);});
+      jobs.push({x:x,y:y+SIZE*z*0.80-((lines.length-1)*fsN*1.06)/2,
+        fs:fsN,lh:fsN*1.06,w:w,lines:lines,bold:true,unit:SIZE*z,dy:0,
+        col:"#f2f8fa",blur:Math.max(4,fsN*0.62)});
+    }
+  }
+  placeLabels(jobs,[0,-1.62,0.72,-2.30,1.44]);
+  jobs.forEach(function(j){
+    lctx.font=(j.bold?"700 ":"")+j.fs+"px "+F;
+    if(j.sp){try{lctx.letterSpacing=j.sp;}catch(e){}}
+    j.lines.forEach(function(ln,li){haloText(ln,j.x,j.y+(j.dy||0)+li*j.lh,j.col,j.blur);});
+    if(j.sp){try{lctx.letterSpacing="0px";}catch(e){}}
+  });
+  drawRoute();
+  if(flash){
+    var fc=hexToPixel(flash.col,flash.row),fi;
+    lctx.strokeStyle="rgba(216,161,84,.95)";lctx.lineWidth=Math.max(2.5,z*1.15);
+    lctx.beginPath();
+    for(fi=0;fi<6;fi++){
+      var fa=Math.PI/180*(60*fi-30);
+      var fx=(fc.x+SIZE*1.16*Math.cos(fa))*z,fy=(fc.y+SIZE*1.16*Math.sin(fa))*z;
+      fi?lctx.lineTo(fx,fy):lctx.moveTo(fx,fy);
+    }
+    lctx.closePath();lctx.stroke();
+  }
+  if(sel){
+    var s=hexToPixel(sel.col,sel.row),i;
+    lctx.strokeStyle="#7fd0e2";lctx.lineWidth=Math.max(1.5,z*0.62);
+    lctx.beginPath();
+    for(i=0;i<6;i++){
+      var a=Math.PI/180*(60*i-30);
+      var px=(s.x+SIZE*Math.cos(a))*z,py=(s.y+SIZE*Math.sin(a))*z;
+      i?lctx.lineTo(px,py):lctx.moveTo(px,py);
+    }
+    lctx.closePath();lctx.stroke();
+  }
+}
+function renderDetail(){
+  var det=detailHex&&detailHex.d;
+  var img=pctx.createImageData(LW,LH),d=img.data,cache={},k;
+  for(k in TILES)cache[k]=TILES[k].map(rgb);
+  var y,x;
+  for(y=0;y<LH;y++)for(x=0;x<LW;x++){
+    var p=(y*LW+x)*4;d[p+3]=255;
+    if(!det){d[p]=11;d[p+1]=17;d[p+2]=22;continue;}
+    var sh=cache[det.t[((y/DTILE)|0)*DW+((x/DTILE)|0)]]||cache.ground;
+    var n=hash(x,y),col=sh[Math.min(sh.length-1,Math.floor(n*sh.length))];
+    var R=col[0],Gc=col[1],B=col[2];
+    if(x%DTILE===0||y%DTILE===0){R=Math.round(R*.88);Gc=Math.round(Gc*.88);B=Math.round(B*.9);}
+    d[p]=R;d[p+1]=Gc;d[p+2]=B;
+  }
+  pctx.putImageData(img,0,0);
+  lctx.clearRect(0,0,lbl.width,lbl.height);
+  if(!det)return;
+  var z=dzoom,fs=Math.max(9,Math.round(2.4*z));
+  lctx.font="bold "+fs+"px "+getComputedStyle(document.body).fontFamily;
+  lctx.textAlign="center";lctx.textBaseline="middle";
+  det.p.forEach(function(pn,i){
+    var x2=(pn.x+0.5)*DTILE*z,y2=(pn.y+0.5)*DTILE*z,rr=DTILE*z*0.42;
+    lctx.beginPath();lctx.arc(x2,y2,rr,0,7);
+    lctx.fillStyle="#12181c";lctx.fill();
+    lctx.strokeStyle="#d8a154";lctx.lineWidth=Math.max(1.2,z*0.34);lctx.stroke();
+    lctx.fillStyle="#f0dcbb";lctx.fillText(String(i+1),x2,y2+0.5);
+  });
+  lctx.textBaseline="alphabetic";
+}
+function render(){mode==="region"?renderRegion():renderDetail();}
+
+function showHex(c,r){
+  var hx=H(c,r);
+  var pc=document.getElementById("pCoord"),pm=document.getElementById("pMeta");
+  var ps=document.getElementById("pSite"),pb=document.getElementById("pBrief");
+  var pd=document.getElementById("pDetail");
+  if(!hx){pc.textContent="\u2014";pm.textContent=T("nothingCharted");
+    ps.textContent="";pb.textContent="";pd.style.display="none";return;}
+  pc.textContent=coordOf(c,r);
+  var bits=[TT("ter",hx.t,T("unknownGround"))];
+  if(hx.k==="?")bits.push(T("controlUnknown"));
+  else if(hx.k&&hx.k!=="none")bits.push(facName(hx.k));
+  if(hx.m)bits.push(TT("mk",hx.m,MK[hx.m].n));
+  pm.textContent=bits.join(" \u00b7 ");
+  ps.textContent=hx.n||"";
+  pb.textContent=hx.b||(hx.n?"":T("fromAir"));
+  pd.style.display=hx.d?"block":"none";
+}
+document.getElementById("pDetail").onclick=function(){
+  if(!sel)return;var hx=H(sel.col,sel.row);if(!hx||!hx.d)return;
+  detailHex=hx;mode="detail";
+  document.getElementById("hMode").textContent=T("closeup")+" \u00b7 "+coordOf(sel.col,sel.row);
+  document.getElementById("pBack").style.display="block";
+  document.getElementById("pDetail").style.display="none";
+  sizeCanvas();render();
+};
+document.getElementById("pBack").onclick=function(){
+  mode="region";detailHex=null;
+  document.getElementById("hMode").textContent="";
+  document.getElementById("pBack").style.display="none";
+  sizeCanvas();render();if(sel)showHex(sel.col,sel.row);
+};
+var ppan=null,pmoved=0;
+pix.addEventListener("mousedown",function(e){
+  if(e.button!==0&&e.button!==1)return;
+  var f=document.querySelector(".field");
+  ppan={x:e.clientX,y:e.clientY,sl:f.scrollLeft,st:f.scrollTop,f:f};pmoved=0;
+  pix.style.cursor="grabbing";e.preventDefault();
+});
+window.addEventListener("mousemove",function(e){
+  if(!ppan)return;
+  var dx=e.clientX-ppan.x,dy=e.clientY-ppan.y;
+  pmoved=Math.max(pmoved,Math.abs(dx)+Math.abs(dy));
+  ppan.f.scrollLeft=ppan.sl-dx;ppan.f.scrollTop=ppan.st-dy;
+});
+window.addEventListener("mouseup",function(){if(ppan){ppan=null;pix.style.cursor="grab";}});
+pix.style.cursor="grab";
+pix.addEventListener("click",function(e){
+  if(pmoved>4)return;
+  if(mode!=="region")return;
+  var rect=pix.getBoundingClientRect(),z=Z();
+  var h=pixelToHex((e.clientX-rect.left)/z,(e.clientY-rect.top)/z);
+  if(!inB(h.col,h.row))return;
+  if(ruler){
+    var last=route[route.length-1];
+    if(!last)route.push({col:h.col,row:h.row});
+    else if(last.col!==h.col||last.row!==h.row)
+      hexLine(last,h).forEach(function(pt){if(inB(pt.col,pt.row))route.push(pt);});
+    renderMeasure();drawLabels();return;
+  }
+  sel=h;showHex(h.col,h.row);drawLabels();showTab("hex");
+});
+function setZoom(v){
+  var lo=mode==="region"?1:2,hi=mode==="region"?6:8;
+  v=Math.max(lo,Math.min(hi,v));
+  if(mode==="region")zoom=v;else dzoom=v;
+  sizeCanvas();render();
+}
+function zoomAt(cx,cy,dir){
+  var f=document.querySelector(".field");
+  var r=pix.getBoundingClientRect(),z0=Z();
+  var mx=(cx-r.left)/z0,my=(cy-r.top)/z0;
+  var lo=mode==="region"?1:2,hi=mode==="region"?6:8;
+  var z1=Math.max(lo,Math.min(hi,z0+dir));
+  if(z1===z0)return;
+  if(mode==="region")zoom=z1;else dzoom=z1;
+  sizeCanvas();render();
+  var fr=f.getBoundingClientRect(),cs=getComputedStyle(f);
+  var padL=parseFloat(cs.paddingLeft)||0,padT=parseFloat(cs.paddingTop)||0;
+  f.scrollLeft=Math.max(0,mx*z1-cx+fr.left+padL);
+  f.scrollTop =Math.max(0,my*z1-cy+fr.top +padT);
+}
+(function(){
+  var f=document.querySelector(".field"),acc=0;
+  f.addEventListener("wheel",function(e){
+    if(!(e.ctrlKey||e.metaKey))return;
+    e.preventDefault();
+    acc+=e.deltaY;
+    if(Math.abs(acc)<40)return;
+    var dir=acc<0?1:-1;acc=0;
+    zoomAt(e.clientX,e.clientY,dir);
+  },{passive:false});
+})();
+document.getElementById("zIn").onclick=function(){setZoom(Z()+1);};
+document.getElementById("zOut").onclick=function(){setZoom(Z()-1);};
+
+var route=[],ruler=false;
+function offToCube(c,r){var x=c-((r-(r&1))/2),z=r;return {x:x,y:-x-z,z:z};}
+function cubeToOff(cu){return {col:cu.x+((cu.z-(cu.z&1))/2),row:cu.z};}
+function cubeRound(x,y,z){
+  var rx=Math.round(x),ry=Math.round(y),rz=Math.round(z);
+  var dx=Math.abs(rx-x),dy=Math.abs(ry-y),dz=Math.abs(rz-z);
+  if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;
+  return {x:rx,y:ry,z:rz};
+}
+function hexLine(a,b){
+  var A=offToCube(a.col,a.row),B=offToCube(b.col,b.row),out=[],i;
+  var N=Math.max(Math.abs(A.x-B.x),Math.abs(A.y-B.y),Math.abs(A.z-B.z));
+  if(N===0)return out;
+  for(i=1;i<=N;i++){
+    var t=i/N;
+    out.push(cubeToOff(cubeRound(
+      A.x+(B.x-A.x)*t+1e-6,A.y+(B.y-A.y)*t+1e-6,A.z+(B.z-A.z)*t-2e-6)));
+  }
+  return out;
+}
+function edgeBetween(a,b){
+  for(var e=0;e<6;e++){var n=neighbor(a.col,a.row,e);
+    if(n[0]===b.col&&n[1]===b.row)return (a.col+","+a.row)<(b.col+","+b.row)
+      ?(a.col+","+a.row+"|"+b.col+","+b.row):(b.col+","+b.row+"|"+a.col+","+a.row);}
+  return null;
+}
+function renderMeasure(){
+  var box=document.getElementById("measureBox");
+  if(route.length<1){box.classList.add("hidden");
+    document.getElementById("mbBody").innerHTML="";return;}
+  box.classList.remove("hidden");
+  var w=0,v=0,fb=false,vb=false,wet=0,i;
+  for(i=1;i<route.length;i++){
+    var h=H(route[i].col,route[i].row);
+    var t=h?(TRAVEL[h.t]||TRAVEL.unsurveyed):TRAVEL.unsurveyed;
+    if(t.w===null)fb=true;else w+=t.w;
+    if(t.v===null)vb=true;else v+=t.v;
+    var k=edgeBetween(route[i-1],route[i]);
+    if(k&&(DATA.rivers||{})[k]&&!(DATA.crossings||{})[k])wet++;
+  }
+  var hu=T("hrs"),du=T("days");
+  var html='<div class="mb-r"><span>'+T("hexesEntered")+'</span><b>'+(route.length-1)+'</b></div>';
+  html+='<div class="mb-r"><span>'+T("onFoot")+'</span><b>'+
+    (fb?T("impassable"):w+" "+hu+" · "+(w/10).toFixed(1)+" "+du)+'</b></div>';
+  html+='<div class="mb-r"><span>'+T("vehicle")+'</span><b>'+
+    (vb?T("impassable"):v.toFixed(1)+" "+hu+" · "+(v/10).toFixed(1)+" "+du)+'</b></div>';
+  if(wet)html+='<div class="mb-warn">⚠ '+wet+" "+T("wetCrossings")+'</div>';
+  html+='<div class="mb-hint">'+T("dayNote")+'</div>';
+  document.getElementById("mbBody").innerHTML=html;
+}
+function drawRoute(){
+  if(route.length<1||mode!=="region")return;
+  var z=Z();
+  lctx.save();lctx.lineJoin="round";lctx.lineCap="round";
+  [["rgba(8,12,15,.85)",Math.max(4,z*2.1)],["#e0c58a",Math.max(1.6,z*0.85)]].forEach(function(st){
+    lctx.strokeStyle=st[0];lctx.lineWidth=st[1];lctx.beginPath();
+    route.forEach(function(p,i){var c=hexToPixel(p.col,p.row);
+      i?lctx.lineTo(c.x*z,c.y*z):lctx.moveTo(c.x*z,c.y*z);});
+    lctx.stroke();
+  });
+  route.forEach(function(p,i){
+    var c=hexToPixel(p.col,p.row),rr=Math.max(2.4,z*1.25);
+    lctx.beginPath();lctx.arc(c.x*z,c.y*z,rr,0,7);
+    lctx.fillStyle=(i===0||i===route.length-1)?"#f0dcbb":"#c2a878";
+    lctx.strokeStyle="rgba(8,12,15,.85)";lctx.lineWidth=Math.max(1,z*0.5);
+    lctx.fill();lctx.stroke();
+  });
+  lctx.restore();
+}
+document.getElementById("mbClear").onclick=function(){route=[];renderMeasure();drawLabels();};
+document.getElementById("zRuler").onclick=function(){
+  ruler=!ruler;
+  this.setAttribute("aria-pressed",ruler);
+  this.style.color=ruler?"#e0c58a":"";
+  pix.style.cursor=ruler?"cell":"grab";
+};
+function escH(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function wikiSlug(t){
+  return String(t||"").toLowerCase().normalize("NFD")
+    .replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+}
+var WIX=null;
+function wikiIndex(){
+  if(WIX)return WIX;
+  WIX={};var W=DATA.wiki||{};
+  (W.entries||[]).forEach(function(e,i){if(e.t)WIX[wikiSlug(e.t)]={kind:"entry",i:i};});
+  (W.sites||[]).forEach(function(si,i){if(si.t)WIX[wikiSlug(si.t)]={kind:"site",i:i};});
+  return WIX;
+}
+/* [1514] is a hex, [Nákaza] is an article, [Nákaza|té nákaze] is an article
+   with different wording in the sentence. A bracket with no matching article
+   renders as plain text — the players never see a dead link. */
+function dirHtml(body){
+  var ix=wikiIndex();
+  return escH(body||"").replace(/\[([^\]|]{1,64})(?:\|([^\]]{1,64}))?\]/g,
+    function(m,target,label){
+      var t=target.trim();
+      if(/^\d{4}$/.test(t))
+        return '<a class="hexlink" data-c="'+t.slice(0,2)+'" data-r="'+t.slice(2)+
+               '" href="#">'+escH(label||t)+'</a>';
+      var hit=ix[wikiSlug(t)];
+      if(!hit)return escH(label||t);
+      return '<a class="wikilink" data-w="'+escH(wikiSlug(t))+'" href="#">'+
+             escH(label||t)+'</a>';
+    });
+}
+/* Categories are the GM's word, but the common ones are effectively chrome,
+   so a small dictionary maps them both ways. Anything unrecognised passes
+   through exactly as typed. */
+var CATMAP={
+ history:{cs:"Historie",en:"History"},historie:{cs:"Historie",en:"History"},
+ factions:{cs:"Frakce",en:"Factions"},frakce:{cs:"Frakce",en:"Factions"},
+ terms:{cs:"Pojmy",en:"Terms"},pojmy:{cs:"Pojmy",en:"Terms"},
+ people:{cs:"Lidé",en:"People"},lide:{cs:"Lidé",en:"People"},
+ places:{cs:"Místa",en:"Places"},mista:{cs:"Místa",en:"Places"},
+ technology:{cs:"Technologie",en:"Technology"},technologie:{cs:"Technologie",en:"Technology"},
+ general:{cs:"Obecné",en:"General"},obecne:{cs:"Obecné",en:"General"},
+ sites:{cs:"Lokality",en:"Sites"},lokality:{cs:"Lokality",en:"Sites"}
+};
+function catName(c){
+  if(!c)return T("general");
+  var m=CATMAP[wikiSlug(c)];
+  return (m&&m[LOC])||c;
+}
+function showTab(t){
+  ["brief","wiki","hex","key"].forEach(function(k){
+    document.getElementById("pane"+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle("hidden",k!==t);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
+    b.setAttribute("aria-pressed",b.dataset.t===t);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
+  b.onclick=function(){showTab(b.dataset.t);};
+});
+function jumpTo(c,r){
+  if(!inB(c,r))return;
+  if(mode!=="region"){mode="region";detailHex=null;
+    document.getElementById("hMode").textContent="";
+    document.getElementById("pBack").style.display="none";sizeCanvas();}
+  sel={col:c,row:r};flash={col:c,row:r};
+  clearTimeout(flashT);flashT=setTimeout(function(){flash=null;drawLabels();},2400);
+  render();showHex(c,r);showTab("hex");
+  var ctr=hexToPixel(c,r),f=document.querySelector(".field");
+  f.scrollLeft=Math.max(0,ctr.x*zoom-f.clientWidth/2);
+  f.scrollTop =Math.max(0,ctr.y*zoom-f.clientHeight/2);
+}
+function briefings(){
+  var box=document.getElementById("paneBrief"),ds=DATA.directives||[];
+  if(!ds.length){
+    box.innerHTML='<div class="muted">No briefings yet. Anything your commander sends between '+
+      'sessions will appear here, newest first.</div>';return;
+  }
+  var html="";
+  ds.forEach(function(d,i){
+    if(i)html+='<hr class="dirsep">';
+    html+='<article class="dir">';
+    if(d.date)html+='<div class="dirdate">'+escH(d.date)+'</div>';
+    if(d.title)html+='<h3>'+escH(d.title)+'</h3>';
+    html+='<div class="dirbody">'+dirHtml(d.body)+'</div>';
+    if(d.audio)html+='<div class="dirtag">'+T("recorded")+'</div>'+
+      '<audio controls preload="none" src="'+d.audio+'"></audio>';
+    html+='</article>';
+  });
+  box.innerHTML=html;
+  wireWikiBody(box);
+}
+/* Older exports carried a single baked-in theme; newer ones carry all four and
+   let the reader choose. Either way the map redraws from themeCanvases. */
+var THEMES=DATA.themes||null, TCANV=DATA.themeCanvases||null;
+var curTheme=DATA.theme||"malachite";
+function pickTheme(){
+  var t=null;
+  try{t=localStorage.getItem("vesper:theme");}catch(e){}
+  if(t&&(!THEMES||THEMES[t]))return t;
+  return DATA.theme||"malachite";
+}
+function themeCanvas(){
+  if(TCANV&&TCANV[curTheme])return TCANV[curTheme];
+  return DATA.themeCanvas||{void:"#07120d",edge:"#1d3a2e",fog:"#173029",grade:[44,122,88,0.15]};
+}
+function applyPlayerTheme(name){
+  curTheme=name;
+  var root=document.documentElement, vars=THEMES?THEMES[name]:DATA.themeVars;
+  if(THEMES){
+    /* clear whatever the last theme set, then lay the new one down */
+    Object.keys(THEMES).forEach(function(k){
+      Object.keys(THEMES[k]).forEach(function(v){root.style.removeProperty(v);});
+    });
+  }
+  if(vars)Object.keys(vars).forEach(function(v){root.style.setProperty(v,vars[v]);});
+  Array.prototype.forEach.call(document.querySelectorAll("#pThemes button"),function(b){
+    b.setAttribute("aria-pressed",b.dataset.t===name);
+  });
+  try{localStorage.setItem("vesper:theme",name);}catch(e){}
+}
+function applyLocale(l){
+  if(!STR[l])return;
+  LOC=l;
+  try{localStorage.setItem("vesper:loc",l);}catch(e){}
+  document.documentElement.lang=l;
+  var q=function(sel){return document.querySelector(sel);};
+  var tabs={brief:"briefings",wiki:"wiki",hex:"thisHex",key:"key"};
+  Object.keys(tabs).forEach(function(k){
+    var b=q('.tabs button[data-t="'+k+'"]');if(b)b.textContent=T(tabs[k]);
+  });
+  var set=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  set("mbClear",T("clearRoute"));
+  set("pDetail",T("viewCloseup"));
+  set("pBack",T("backToRegion"));
+  var mh=q(".mb-h");if(mh)mh.textContent=T("route");
+  var zr=document.getElementById("zRuler");if(zr)zr.title=T("measure");
+  if(route.length)renderMeasure();
+  var wf=document.getElementById("wikiFind");if(wf)wf.placeholder=T("searchWiki");
+  var pm=document.getElementById("pMeta");
+  if(pm&&!sel)pm.textContent=T("clickHex");
+  set("hMode",(detailHex&&sel)?T("closeup")+" · "+coordOf(sel.col,sel.row):"");
+  document.getElementById("hTitle").textContent=DATA.title||T("regionMap");
+  document.title="Vesper · "+(DATA.title||T("regionMap"));
+  Array.prototype.forEach.call(document.querySelectorAll("#pLoc button"),function(b){
+    b.setAttribute("aria-pressed",b.dataset.l===l);
+  });
+  legend();briefings();
+  if(openSlug)openArticle(openSlug); else renderWiki(wf?wf.value:"");
+  if(sel)showHex(sel.col,sel.row);
+}
+function renderWiki(q){
+  var box=document.getElementById("wikiBody"),W=DATA.wiki||{entries:[],sites:[]};
+  var ents=W.entries||[],sites=W.sites||[],html="",i,cats={},order=[];
+  q=(q||"").trim().toLowerCase();
+  function match(a,b,c){
+    if(!q)return true;
+    return ((a||"")+" "+(b||"")+" "+(c||"")).toLowerCase().indexOf(q)>=0;
+  }
+  function siteMatch(si){return match(si.t||"???",si.b,si.x);}
+  ents.forEach(function(e){
+    if(!match(e.t,e.b,e.c))return;
+    var c=e.c||"general";
+    if(!cats[c]){cats[c]=[];order.push(c);}
+    cats[c].push(e);
+  });
+  var shownSites=sites.filter(siteMatch);
+  if(!order.length&&!shownSites.length){
+    box.innerHTML='<div class="wnone">'+(q?T("nothingMatches"):T("wikiEmpty"))+'</div>';return;
+  }
+  order.forEach(function(c){
+    html+='<div class="wsec">'+escH(catName(c))+'</div>';
+    cats[c].forEach(function(e){
+      var ex=(e.b||"").replace(/\[([^\]|]{1,64})(?:\|([^\]]{1,64}))?\]/g,"$1")
+                      .replace(/\s+/g," ").trim();
+      html+='<a href="#" class="wart wrow" data-open="'+escH(wikiSlug(e.t))+'">'+
+            '<h4>'+escH(e.t)+'</h4>'+
+            (ex?'<div class="wex">'+escH(ex.slice(0,150))+(ex.length>150?"…":"")+'</div>':"")+
+            '</a>';
+    });
+  });
+  if(shownSites.length){
+    html+='<div class="wsec">'+T("sites")+'</div>';
+    shownSites.forEach(function(si){
+      var mk=si.m&&MK[si.m]?TT("mk",si.m,MK[si.m].n):"";
+      var unnamed=!si.t,ex=(si.b||"").replace(/\s+/g," ").trim();
+      html+='<a href="#" class="wart wrow site'+(unnamed?" unknown":"")+'"'+
+            (unnamed?'':' data-open="'+escH(wikiSlug(si.t))+'"')+'>'+
+            '<h4>'+(unnamed?"???":escH(si.t))+'</h4>'+
+            '<div class="wx">'+escH(si.x)+(mk?" · "+escH(mk):"")+
+            (si.k?"":" · "+T("observedOnly"))+'</div>'+
+            '<div class="wex'+(ex?"":" muted")+'">'+
+            escH(ex?ex.slice(0,150)+(ex.length>150?"…":"")
+                  :(si.k?T("noReport"):T("seenFromAir")))+'</div></a>';
+    });
+  }
+  box.innerHTML=html;
+  wireWikiBody(box);
+}
+function wireWikiBody(box){
+  Array.prototype.forEach.call(box.querySelectorAll(".hexlink"),function(a){
+    a.onclick=function(ev){ev.preventDefault();
+      jumpTo(parseInt(a.dataset.c,10)-1,parseInt(a.dataset.r,10)-1);};
+  });
+  Array.prototype.forEach.call(box.querySelectorAll(".wikilink"),function(a){
+    a.onclick=function(ev){ev.preventDefault();openArticle(a.dataset.w);};
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("[data-open]"),function(a){
+    a.onclick=function(ev){ev.preventDefault();openArticle(a.dataset.open);};
+  });
+  Array.prototype.forEach.call(box.querySelectorAll("[data-back]"),function(a){
+    a.onclick=function(ev){ev.preventDefault();closeArticle();};
+  });
+}
+var openSlug=null;
+function closeArticle(){
+  openSlug=null;
+  var f=document.getElementById("wikiFind");if(f)f.classList.remove("hidden");
+  renderWiki(f?f.value:"");
+}
+/* Lore runs long, so the list shows titles with an excerpt and the article
+   opens in full on its own. Cross-references land here too, which is the
+   point of them. */
+function openArticle(slug){
+  var ix=wikiIndex(),hit=ix[slug],W=DATA.wiki||{};
+  if(!hit)return;
+  showTab("wiki");
+  openSlug=slug;
+  var f=document.getElementById("wikiFind");if(f)f.classList.add("hidden");
+  var box=document.getElementById("wikiBody"),html="",body,title,meta="",si=null;
+  if(hit.kind==="entry"){
+    var e=(W.entries||[])[hit.i];title=e.t;body=e.b;meta=catName(e.c);
+  }else{
+    si=(W.sites||[])[hit.i];
+    title=si.t||"???";
+    meta=si.x+(si.m&&MK[si.m]?" · "+TT("mk",si.m,MK[si.m].n):"")+
+         (si.k?"":" · "+T("observedOnly"));
+    body=si.b||(si.k?T("noReport"):T("seenFromAir"));
+  }
+  html+='<a href="#" class="wback" data-back="1">← '+escH(T("backToWiki"))+'</a>';
+  html+='<div class="wfull"><h3>'+escH(title)+'</h3>'+
+        '<div class="wx">'+escH(meta)+'</div>'+
+        '<div class="wb">'+dirHtml(body)+'</div></div>';
+  if(si)html+='<a href="#" class="hexlink wgoto" data-c="'+escH(si.x.slice(0,2))+
+              '" data-r="'+escH(si.x.slice(2))+'">'+escH(T("showOnMap"))+'</a>';
+  box.innerHTML=html;
+  wireWikiBody(box);
+  box.scrollTop=0;
+}
+function anyUnknown(){
+  for(var k in DATA.hexes)if(DATA.hexes[k].k==="?")return true;
+  return false;
+}
+function legend(){
+  var box=document.getElementById("pLegend"),t={},m={},z={},xr={},riv=false,rd=false,k;
+  for(k in DATA.hexes){
+    var h=DATA.hexes[k];
+    t[h.t]=1;if(h.m)m[h.m]=1;if(h.k&&h.k!=="none")z[h.k]=1;
+  }
+  if(Object.keys(DATA.rivers||{}).length)riv=true;
+  if(Object.keys(DATA.roads||{}).length)rd=true;
+  for(k in (DATA.crossings||{}))xr[DATA.crossings[k]]=1;
+  /* Grouped the way the editor's rail is grouped, and each row carries the
+     symbol it stands for: a terrain chip, a control chip, the mark's own glyph,
+     a drawn line for water and ways. A wall of identical rectangles told the
+     players nothing about which shape on the map it referred to. */
+  var html="",sec=function(title,rows){
+    return rows?'<div class="lsec">'+title+'</div><div class="lgrid">'+rows+'</div>':"";
+  };
+  var chip=function(col,label){
+    return '<div class="lgd"><i class="chip" style="background:'+col+'"></i><span>'+label+'</span></div>';
+  };
+  var glyph=function(col,g,label){
+    return '<div class="lgd"><i class="gly" style="color:'+col+'">'+g+'</i><span>'+label+'</span></div>';
+  };
+  var stroke=function(col,label,dash){
+    return '<div class="lgd"><i class="ln"><b style="background:'+col+
+      (dash?';height:2px;background:repeating-linear-gradient(90deg,'+col+' 0 3px,transparent 3px 6px)':"")+
+      '"></b></i><span>'+label+'</span></div>';
+  };
+  var r1="";for(k in t)if(TER[k])r1+=chip(TER[k][0],TT("ter",k,TNAME[k]||k));
+  html+=sec(T("legTerrain"),r1);
+  var r2="";for(k in z)r2+=chip(facCol(k),escH(facName(k)));
+  if(anyUnknown())r2+='<div class="lgd"><i class="chip unk"></i><span>'+T("controlUnknown")+'</span></div>';
+  html+=sec(T("legControl"),r2);
+  var r3="";for(k in m)r3+=glyph(MK[k].c,MK[k].g||"■",TT("mk",k,MK[k].n));
+  html+=sec(T("legSites"),r3);
+  var r4="";
+  if(riv)r4+=stroke(RIVER,T("river"));
+  if(rd)r4+=stroke(ROAD,T("track"),true);
+  for(k in xr)r4+=glyph(XING[k].c,XING[k].g||"╤",TT("xing",k,XING[k].n));
+  html+=sec(T("legWays"),r4);
+  box.innerHTML=html;
+}
+function boot(){
+  applyPlayerTheme(pickTheme());
+  document.getElementById("hTitle").textContent=DATA.title||T("regionMap");
+  document.title="Vesper · "+(DATA.title||"Region map");
+  sizeCanvas();render();legend();briefings();renderWiki("");
+  Array.prototype.forEach.call(document.querySelectorAll("#pThemes button"),function(b){
+    b.onclick=function(){applyPlayerTheme(b.dataset.t);render();};
+  });
+  applyPlayerTheme(curTheme);
+  Array.prototype.forEach.call(document.querySelectorAll("#pLoc button"),function(b){
+    b.onclick=function(){applyLocale(b.dataset.l);};
+  });
+  applyLocale(LOC);
+  var wf=document.getElementById("wikiFind");
+  if(wf)wf.oninput=function(){renderWiki(wf.value);};
+  /* No wiki content means no wiki tab — an empty tab is worse than none. */
+  var W=DATA.wiki||{};
+  if(!((W.entries||[]).length+(W.sites||[]).length)){
+    var wb=document.querySelector('.tabs button[data-t="wiki"]');
+    if(wb)wb.style.display="none";
+  }
+}
+boot();
+/* If a map.json sits beside this file (e.g. on GitHub Pages), prefer it —
+   the GM updates one small file and players just refresh. Fails silently
+   when opened straight off disk, which is the standalone case. */
+if(typeof fetch==="function"){
+  fetch("map.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;})
+    .then(function(j){ if(j&&j.hexes&&j.cols){DATA=j;sel=null;boot();
+        document.getElementById("hStamp").textContent=T("live");} })
+    .catch(function(){});
+}
+})();
+</script>
