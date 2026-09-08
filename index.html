@@ -142,6 +142,123 @@ h1{display:flex;align-items:baseline}
   display:block}
 .pthemes button[aria-pressed="true"]{border-color:var(--bright);box-shadow:0 0 0 1px var(--bright)}
 :focus-visible{outline:1px solid var(--accent);outline-offset:1px}
+/* ---- dice ---------------------------------------------------------
+   A tray in the bottom corner of the map and a strip of recent results
+   beside it, so the table can see who threw what without leaving the map. */
+.dice{position:absolute;left:14px;right:14px;bottom:14px;z-index:7;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.dice>*{pointer-events:auto}
+.dicerow{display:flex;align-items:flex-end;gap:10px}
+.dicebar{flex:1;min-width:0;display:flex;background:var(--float);border:1px solid var(--line)}
+.dexp{flex:none;width:25px;background:none;border:0;border-right:1px solid var(--line);
+  color:var(--dim);cursor:pointer;font-size:8px;font-family:var(--mono)}
+.dexp:hover{color:var(--bright);background:var(--panel2)}
+.dexp[aria-expanded="true"]{color:var(--accent-hi);background:var(--accent-bg)}
+.dticker{flex:1;min-width:0;display:flex;align-items:center;gap:17px;
+  overflow-x:auto;overflow-y:hidden;padding:7px 11px;scrollbar-width:none}
+.dticker::-webkit-scrollbar{height:0}
+.dnone{color:var(--dim);font-size:10.5px;letter-spacing:.1em;white-space:nowrap}
+.dent{display:flex;align-items:center;gap:7px;flex:none;white-space:nowrap;font-size:12px}
+.dwho{font-style:normal;color:var(--bone);max-width:9em;overflow:hidden;text-overflow:ellipsis}
+.dtot{color:var(--bright);font-size:16px;font-weight:700;min-width:1.1em;text-align:center}
+.dnota{font-style:normal;color:var(--dim);font-size:10px;letter-spacing:.05em}
+.dent.crit .dtot{color:var(--accent-hi)}
+.dent.fumble .dtot{color:var(--oxide)}
+.dfaces{display:flex;gap:3px}
+.dface{font-style:normal;display:flex;align-items:center;justify-content:center;
+  min-width:19px;height:19px;padding:0 3px;font-size:11px;color:var(--dim);
+  border:1px solid var(--line);background:var(--panel3)}
+.dface.set{color:var(--bright);border-color:var(--thumb-hi)}
+.dent.rolling .dtot{color:var(--dim)}
+.dent.landed .dtot{animation:dpop .42s ease-out}
+@keyframes dpop{0%{transform:scale(1.55);color:var(--accent-hi)}100%{transform:none}}
+.dtray{flex:none;width:198px;background:var(--float);border:1px solid var(--line);
+  padding:7px 8px 8px;display:flex;flex-direction:column;gap:6px}
+.dtop{display:flex;gap:6px;align-items:center}
+#dName{flex:1;min-width:0;background:var(--void);border:1px solid var(--line);
+  color:var(--bright);font:inherit;font-size:11px;padding:4px 6px}
+#dName:focus{outline:none;border-color:var(--accent)}
+.dmin{flex:none;width:21px;height:21px;background:none;border:1px solid var(--line);
+  color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:13px;line-height:1;padding:0}
+.dmin:hover{color:var(--bright);border-color:var(--dim)}
+.dsel{display:flex;align-items:center;gap:4px}
+.dsel span{color:var(--dim);font-size:11px;flex:none}
+.dsel select{flex:1;min-width:0;background:var(--void);color:var(--bright);
+  border:1px solid var(--line);font:inherit;font-size:11px;padding:4px 3px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
+.dsel select:focus{outline:none;border-color:var(--accent)}
+.dsel option{background:var(--panel);color:var(--bright)}
+.droll{background:var(--accent-bg);border:1px solid var(--accent);color:var(--accent-hi);
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  padding:8px 4px;cursor:pointer}
+.droll:hover{background:var(--accent);color:var(--void)}
+.droll:disabled{opacity:.45;cursor:default}
+.dshow{display:none;align-self:flex-end;background:var(--float);border:1px solid var(--line);
+  color:var(--bone);font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;padding:8px 12px;cursor:pointer}
+.dshow:hover{color:var(--bright);border-color:var(--dim)}
+.dice.min .dicerow,.dice.min .dlog{display:none}
+.dice.min .dshow{display:block}
+.dlog{background:var(--panel);border:1px solid var(--line);max-height:238px;overflow-y:auto}
+.dlog .drow{display:flex;align-items:center;gap:9px;padding:5px 11px;font-size:11.5px}
+.dlog .drow+.drow{border-top:1px solid var(--line2)}
+.dlog .dtime{font-style:normal;color:var(--dim);font-size:9.5px;flex:none;width:44px}
+.dlog .dwho{flex:1;min-width:0;max-width:none}
+.dlog .dfl{font-style:normal;color:var(--dim);font-size:10px;flex:none}
+.dlog .dtot{font-size:14px;min-width:3ch;text-align:right}
+.dlog .dnota{min-width:7ch;text-align:right}
+.dlog .drow.crit .dtot{color:var(--accent-hi)}
+.dlog .drow.fumble .dtot{color:var(--oxide)}
+.dlogfoot{display:flex;justify-content:space-between;gap:10px;padding:5px 10px;
+  border-top:1px solid var(--line)}
+.dclear{background:none;border:0;color:var(--dim);font:inherit;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.dclear:hover{color:var(--oxide)}
+.dboard{color:var(--dim)}
+.dboard.on{color:var(--accent)}
+.dboard:hover{color:var(--bright)}
+/* the throw itself: a canvas laid over the map, only painted mid-throw */
+.dvcan{position:absolute;inset:0;z-index:6;pointer-events:none;display:none}
+.dvcan.on{display:block}
+/* ---- narrow screens ------------------------------------------------
+   The panel becomes a sheet docked to the bottom: its tabs stay put and
+   the body slides up over the map, so the map keeps the whole screen
+   until you actually ask for a briefing. */
+.sheetgrip{display:none;align-items:center;justify-content:center;height:21px;flex:none;
+  background:var(--panel);border:0;border-bottom:1px solid var(--line2);cursor:pointer;padding:0}
+.sheetgrip i{display:block;width:34px;height:3px;background:var(--thumb-hi)}
+@media (max-width:860px){
+  header{padding:7px 11px;gap:10px}
+  h1,.wm,#hTitle{font-size:12px}
+  .wm{letter-spacing:.24em}
+  .hctl{margin-left:0}
+  .wrap{flex-direction:column}
+  .stage{flex:1;min-height:0}
+  .field{padding:0;touch-action:pan-x pan-y}
+  .zoomctl{right:10px;top:10px}
+  .zoomctl button{padding:9px 14px;font-size:17px}
+  .measurebox{right:10px;top:58px;width:192px}
+  .panel{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;z-index:40;
+    border-left:0;border-top:1px solid var(--line);box-shadow:0 -16px 34px rgba(0,0,0,.5)}
+  .sheetgrip{display:flex}
+  .tabs button{padding:12px 3px;font-size:9px}
+  .pane{flex:none;max-height:0;padding:0 13px;overflow:hidden;
+    transition:max-height .2s ease,padding .2s ease}
+  body.sheet .pane{max-height:54vh;max-height:54dvh;padding:13px;overflow-y:auto}
+  .dice{position:fixed;left:0;right:0;bottom:var(--dockh,60px);gap:0}
+  .dicerow{flex-direction:column;align-items:stretch;gap:0}
+  .dicebar,.dtray,.dlog{border-left:0;border-right:0}
+  .dicebar{border-bottom:0}
+  .dexp{width:34px}
+  .dtray{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;
+    border-bottom:0;padding:7px 9px;gap:7px}
+  .dtop{flex:1 1 104px}
+  .dsel{flex:2 1 172px}
+  .droll{flex:1 1 96px}
+  .dlog{max-height:42vh;border-bottom:0}
+  .dshow{margin:0 11px 9px}
+  body.sheet .dice{display:none}
+}
 </style>
 <header>
   <h1><span class="wm">Vesper</span><span class="wdiv">·</span><span id="hTitle"></span></h1>
@@ -176,8 +293,30 @@ h1{display:flex;align-items:baseline}
     <div class="field"><div class="stack" id="stack">
       <canvas id="pix"></canvas><canvas id="lbl"></canvas>
     </div></div>
+    <canvas class="dvcan" id="dvCan"></canvas>
+    <div class="dice" id="dice">
+      <div class="dlog hidden" id="dLog"></div>
+      <div class="dicerow">
+        <div class="dicebar">
+          <button class="dexp" id="dExp" aria-expanded="false">&#9650;</button>
+          <div class="dticker" id="dTicker"></div>
+        </div>
+        <div class="dtray">
+          <div class="dtop">
+            <input type="text" id="dName" maxlength="16" autocomplete="nickname">
+            <button class="dmin" id="dMin">&minus;</button>
+          </div>
+          <div class="dsel">
+            <select id="dCount" aria-label="Dice"></select><span>d</span><select id="dSides" aria-label="Die"></select><select id="dMod" aria-label="Modifier"></select>
+          </div>
+          <button class="droll" id="dRoll">Roll</button><button id="dMode" type="button" style="background:var(--panel2);border:1px solid var(--line);color:var(--bone);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:5px 4px;cursor:pointer">3D: ON</button>
+        </div>
+      </div>
+      <button class="dshow" id="dShow">Dice</button>
+    </div>
   </div>
   <aside class="panel">
+    <button class="sheetgrip" id="sheetGrip" aria-label="Panel"><i></i></button>
     <div class="tabs">
       <button data-t="brief" aria-pressed="true">Briefings</button>
       <button data-t="wiki" aria-pressed="false">Wiki</button>
@@ -231,7 +370,10 @@ var STR={
   hexesEntered:"Prošlých hexů",onFoot:"Pěšky",vehicle:"Vozidlem",impassable:"neprůchodné",
   hrs:"h",days:"d",wetCrossings:"× překročení řeky bez mostu či brodu",
   dayNote:"Dny počítány po 10 hodinách pochodu.",measure:"Změřit trasu",
-  backToWiki:"Zpět na wiki",showOnMap:"Ukázat na mapě"},
+  backToWiki:"Zpět na wiki",showOnMap:"Ukázat na mapě",
+  dice:"Kostky",roll:"Hodit",yourName:"Jméno",player:"Hráč",
+  noRolls:"Zatím žádné hody.",rollLog:"Záznam hodů",clearRolls:"Vymazat",
+  hideDice:"Skrýt kostky",onMap:"Házet po mapě"},
  en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
   clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
   clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
@@ -255,7 +397,10 @@ var STR={
   hexesEntered:"Hexes entered",onFoot:"On foot",vehicle:"Vehicle",impassable:"impassable",
   hrs:"h",days:"d",wetCrossings:"× river crossing with no bridge or ford",
   dayNote:"Days assume 10 travel hours.",measure:"Measure a route",
-  backToWiki:"Back to wiki",showOnMap:"Show on map"}
+  backToWiki:"Back to wiki",showOnMap:"Show on map",
+  dice:"Dice",roll:"Roll",yourName:"Name",player:"Player",
+  noRolls:"No rolls yet.",rollLog:"Roll log",clearRolls:"Clear",
+  hideDice:"Hide dice",onMap:"Throw on the map"}
 };
 var LOC="cs";
 try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
@@ -299,6 +444,9 @@ ford:{n:"Ford",c:"#9fb894",g:"≈"},pontoon:{n:"Pontoon",c:"#b9a98a",g:"≡"}};
 var pix=document.getElementById("pix"),lbl=document.getElementById("lbl");
 var pctx=pix.getContext("2d",{willReadFrequently:true}),lctx=lbl.getContext("2d");
 var LW=0,LH=0,owner=null,zoom=2,dzoom=4,mode="region",sel=null,detailHex=null;
+/* 2x is also the point where hex numbers start to fit, so a phone opens
+   there too rather than at a wider view with no coordinates on it. */
+function narrow(){try{return matchMedia("(max-width:860px)").matches;}catch(e){return false;}}
 var flash=null,flashT=null;
 
 function fac(id){
@@ -731,6 +879,28 @@ function zoomAt(cx,cy,dir){
     zoomAt(e.clientX,e.clientY,dir);
   },{passive:false});
 })();
+/* Two fingers zoom the map. The scale steps in whole numbers, so the pinch
+   is accumulated and fires a step once it has travelled far enough. */
+(function(){
+  var f=document.querySelector(".field"),d0=0;
+  function gap(t){
+    var dx=t[0].clientX-t[1].clientX,dy=t[0].clientY-t[1].clientY;
+    return Math.sqrt(dx*dx+dy*dy);
+  }
+  f.addEventListener("touchstart",function(e){
+    if(e.touches.length===2)d0=gap(e.touches);
+  },{passive:true});
+  f.addEventListener("touchmove",function(e){
+    if(e.touches.length!==2||!d0)return;
+    e.preventDefault();
+    var d=gap(e.touches),r=d/d0;
+    if(r<1.34&&r>0.75)return;
+    var cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    var cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    zoomAt(cx,cy,r>1?1:-1);d0=d;
+  },{passive:false});
+  f.addEventListener("touchend",function(e){if(e.touches.length<2)d0=0;},{passive:true});
+})();
 document.getElementById("zIn").onclick=function(){setZoom(Z()+1);};
 document.getElementById("zOut").onclick=function(){setZoom(Z()-1);};
 
@@ -858,6 +1028,9 @@ function catName(c){
   var m=CATMAP[wikiSlug(c)];
   return (m&&m[LOC])||c;
 }
+/* On a phone the panel is a sheet: picking a tab raises it, tapping the tab
+   you are already on (or the grab handle) puts it back down. */
+function sheet(on){document.body.classList.toggle("sheet",!!on);}
 function showTab(t){
   ["brief","wiki","hex","key"].forEach(function(k){
     document.getElementById("pane"+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle("hidden",k!==t);
@@ -865,10 +1038,18 @@ function showTab(t){
   Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
     b.setAttribute("aria-pressed",b.dataset.t===t);
   });
+  if(narrow())sheet(true);
 }
 Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
-  b.onclick=function(){showTab(b.dataset.t);};
+  b.onclick=function(){
+    if(narrow()&&document.body.classList.contains("sheet")&&
+       b.getAttribute("aria-pressed")==="true"){sheet(false);return;}
+    showTab(b.dataset.t);
+  };
 });
+document.getElementById("sheetGrip").onclick=function(){
+  sheet(!document.body.classList.contains("sheet"));
+};
 function jumpTo(c,r){
   if(!inB(c,r))return;
   if(mode!=="region"){mode="region";detailHex=null;
@@ -956,7 +1137,7 @@ function applyLocale(l){
   Array.prototype.forEach.call(document.querySelectorAll("#pLoc button"),function(b){
     b.setAttribute("aria-pressed",b.dataset.l===l);
   });
-  legend();briefings();
+  legend();briefings();diceLocale();
   if(openSlug)openArticle(openSlug); else renderWiki(wf?wf.value:"");
   if(sel)showHex(sel.col,sel.row);
 }
@@ -1103,6 +1284,518 @@ function legend(){
   html+=sec(T("legWays"),r4);
   box.innerHTML=html;
 }
+/* ---- dice ---------------------------------------------------------
+   Rolls are thrown here and kept in this browser. If the GM hands out a
+   link with ?dice=<firebase realtime db url> on the end, or drops a
+   "diceSync" key into map.json, everyone at the table sees the same strip. */
+var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
+var DCID=Math.random().toString(36).slice(2,10);
+var dLog=[],dRolling=false,dReady=false,dPending=null,dSyncPush=null;
+function dRand(max){
+  try{
+    var lim=Math.floor(4294967296/max)*max,b=new Uint32Array(1),n;
+    do{crypto.getRandomValues(b);n=b[0];}while(n>=lim);
+    return (n%max)+1;
+  }catch(e){return Math.floor(Math.random()*max)+1;}
+}
+function dNota(r){return r.n+"d"+r.s+(r.m>0?"+"+r.m:r.m<0?String(r.m):"");}
+function dTime(ts){
+  var d=new Date(ts||0);
+  return isNaN(d.getTime())?"":d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",hour12:false});
+}
+function dSave(){
+  if(dSyncPush)return;
+  try{localStorage.setItem("vesper:rolls",JSON.stringify(dLog.slice(-DKEEP)));}catch(e){}
+}
+function dEl(tag,cls,txt){
+  var e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(txt!==undefined)e.textContent=txt;
+  return e;
+}
+function dTickerRender(){
+  var strip=document.getElementById("dTicker");
+  if(!strip)return;
+  strip.textContent="";
+  if(!dLog.length){strip.appendChild(dEl("span","dnone",T("noRolls")));return;}
+  dLog.slice(-14).reverse().forEach(function(r,i){
+    var e=dEl("span","dent"+(r.crit?" crit":"")+(r.fumble?" fumble":""));
+    e.appendChild(dEl("i","dwho",r.who||T("player")));
+    if(i===0){
+      var f=dEl("span","dfaces");
+      (r.f||[]).forEach(function(v){f.appendChild(dEl("i","dface set",v));});
+      e.appendChild(f);
+    }
+    e.appendChild(dEl("b","dtot",r.t));
+    e.appendChild(dEl("i","dnota","["+dNota(r)+"]"));
+    strip.appendChild(e);
+  });
+  strip.scrollLeft=0;
+}
+function dLogRender(){
+  var box=document.getElementById("dLog");
+  if(!box)return;
+  box.textContent="";
+  if(!dLog.length)box.appendChild(dEl("div","drow dnone",T("noRolls")));
+  else dLog.slice().reverse().forEach(function(r){
+    var row=dEl("div","drow"+(r.crit?" crit":"")+(r.fumble?" fumble":""));
+    row.appendChild(dEl("i","dtime",dTime(r.ts)));
+    row.appendChild(dEl("i","dwho",r.who||T("player")));
+    row.appendChild(dEl("i","dfl",(r.f||[]).join(" ")));
+    row.appendChild(dEl("b","dtot",r.t));
+    row.appendChild(dEl("i","dnota",dNota(r)));
+    box.appendChild(row);
+  });
+  var foot=dEl("div","dlogfoot");
+  var cb=dEl("button","dclear",T("clearRolls"));
+  cb.id="dClear";
+  cb.onclick=function(){
+    dLog=[];dSave();dTickerRender();dLogRender();
+    if(dSyncPush)dSyncPush(null);
+  };
+  foot.appendChild(cb);box.appendChild(foot);
+}
+/* ---- the throw ------------------------------------------------------
+   Real dice: solid polyhedra carrying an orientation, tumbling under
+   gravity, bouncing off the table on whichever corner hits first, and
+   shouldering each other out of the way. Drawn by hand onto a 2D canvas,
+   so there is still no WebGL and no library and the file stays standalone.
+
+   The numbers are decoration. dRand settles the result before anything
+   moves; when a die finally comes to rest its face labels are swapped so
+   that whichever face landed uppermost carries the number already rolled.
+   Every browser therefore agrees on the total however differently their
+   simulations played out. */
+var DVLIFT=0.72;                                   /* how far height lifts a die up the screen */
+var DVCAM=[0,0.62,0.78],DVLIGHT=[-0.34,-0.44,0.83];
+var DVG=1150,DVE=0.44,DVMU=0.42,DVWALL=0.5,DVBUMP=0.46;
+var DVREST=5.2,DVFADE=0.7;                         /* seconds the dice lie there, then the fade */
+var DVSOLID={},dvCan=null,dvCtx=null,dvBits=[],dvRaf=0,dvTimer=0,dvPrev=0,
+    dvW=0,dvH=0,dvRes=0,dvFade=1,dvAge=0,dvPhase=0,dvDone=null,dvPal=null,dvSeen={};
+
+function dvQuiet(){
+  try{return matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(e){return false;}
+}
+function dvWant(){
+  try{return localStorage.getItem("vesper:diceboard")!=="0";}catch(e){return true;}
+}
+function dvOn(){return !!dvCan&&dvWant()&&!dvQuiet();}
+
+/* --- small vector and quaternion helpers --- */
+function dvSub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function dvCross(a,b){
+  return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+}
+function dvDot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function dvLen(a){return Math.sqrt(dvDot(a,a));}
+function dvUnit(a){var d=dvLen(a)||1;return [a[0]/d,a[1]/d,a[2]/d];}
+function dvQMul(a,b){
+  return [a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],
+          a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],
+          a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],
+          a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];
+}
+function dvQUnit(q){
+  var d=Math.sqrt(q[0]*q[0]+q[1]*q[1]+q[2]*q[2]+q[3]*q[3])||1;
+  return [q[0]/d,q[1]/d,q[2]/d,q[3]/d];
+}
+function dvQRot(q,v){
+  var t=dvCross([q[0],q[1],q[2]],v);
+  t=[t[0]*2,t[1]*2,t[2]*2];
+  var c=dvCross([q[0],q[1],q[2]],t);
+  return [v[0]+q[3]*t[0]+c[0],v[1]+q[3]*t[1]+c[1],v[2]+q[3]*t[2]+c[2]];
+}
+function dvQAxis(ax,ang){
+  var u=dvUnit(ax),s=Math.sin(ang/2);
+  return [u[0]*s,u[1]*s,u[2]*s,Math.cos(ang/2)];
+}
+var dvSeed=1,dvAcc=0;function dvR(){dvSeed^=dvSeed<<13;dvSeed^=dvSeed>>>17;dvSeed^=dvSeed<<5;return(dvSeed>>>0)/4294967296;}function dvQRand(){var u=dvR(),a=Math.sqrt(1-u),b=Math.sqrt(u),t=dvR()*6.2832,r=dvR()*6.2832;return[a*Math.sin(t),a*Math.cos(t),b*Math.sin(r),b*Math.cos(r)];}
+function dvQMix(a,b,t){                            /* short-way nlerp, plenty at this scale */
+  var d=a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3],k=d<0?-1:1,i,o=[];
+  for(i=0;i<4;i++)o.push(a[i]+(b[i]*k-a[i])*t);
+  return dvQUnit(o);
+}
+
+/* --- the solids ---
+   Faces are worked out from the dual solid's directions rather than typed
+   out by hand: for each face direction, take the vertices furthest along it
+   and wind them around it. One routine covers every platonic die. */
+function dvFaces(verts,faces){
+  var rad=0;
+  verts.forEach(function(v){rad=Math.max(rad,dvLen(v));});
+  verts=verts.map(function(v){return [v[0]/rad,v[1]/rad,v[2]/rad];});
+  var out=[];
+  faces.forEach(function(ix){
+    var c=[0,0,0];
+    ix.forEach(function(k){c=[c[0]+verts[k][0],c[1]+verts[k][1],c[2]+verts[k][2]];});
+    c=[c[0]/ix.length,c[1]/ix.length,c[2]/ix.length];
+    var n=dvUnit(dvCross(dvSub(verts[ix[1]],verts[ix[0]]),
+                         dvSub(verts[ix[2]],verts[ix[0]])));
+    if(dvDot(n,c)<0){n=[-n[0],-n[1],-n[2]];ix=ix.slice().reverse();}
+    out.push({i:ix,n:n,c:c,d:dvDot(c,n)});
+  });
+  return {v:verts,f:out};
+}
+function dvDual(verts,dirs){
+  var rad=0;
+  verts.forEach(function(v){rad=Math.max(rad,dvLen(v));});
+  var vn=verts.map(function(v){return [v[0]/rad,v[1]/rad,v[2]/rad];});
+  var faces=[];
+  dirs.forEach(function(d0){
+    var n=dvUnit(d0),best=-9,ix=[];
+    vn.forEach(function(v){best=Math.max(best,dvDot(v,n));});
+    vn.forEach(function(v,k){if(dvDot(v,n)>best-1e-4)ix.push(k);});
+    var c=[0,0,0];
+    ix.forEach(function(k){c=[c[0]+vn[k][0],c[1]+vn[k][1],c[2]+vn[k][2]];});
+    c=[c[0]/ix.length,c[1]/ix.length,c[2]/ix.length];
+    var ax=dvUnit(dvSub(vn[ix[0]],c)),ay=dvCross(n,ax);
+    ix.sort(function(p,q){
+      var a=dvSub(vn[p],c),b=dvSub(vn[q],c);
+      return Math.atan2(dvDot(a,ay),dvDot(a,ax))-Math.atan2(dvDot(b,ay),dvDot(b,ax));
+    });
+    faces.push(ix);
+  });
+  return dvFaces(vn,faces);
+}
+function dvCube(){
+  var v=[],a,b,c;
+  for(a=-1;a<=1;a+=2)for(b=-1;b<=1;b+=2)for(c=-1;c<=1;c+=2)v.push([a,b,c]);
+  return v;
+}
+/* The icosahedron and dodecahedron below are the matched dual pair: the
+   mirrored cyclic orderings are NOT duals of each other, and pairing them
+   the wrong way round produces faces with two vertices in them. */
+function dvIcoB(){
+  var P=1.618034,v=[],a,b;
+  for(a=-1;a<=1;a+=2)for(b=-1;b<=1;b+=2){
+    v.push([0,a*P,b]);v.push([a*P,b,0]);v.push([a,0,b*P]);
+  }
+  return v;
+}
+function dvDodec(){
+  var P=1.618034,ip=1/P,v=dvCube(),a,b;
+  for(a=-1;a<=1;a+=2)for(b=-1;b<=1;b+=2){
+    v.push([0,a*ip,b*P]);v.push([a*ip,b*P,0]);v.push([a*P,0,b*ip]);
+  }
+  return v;
+}
+function dvSolidFor(sides){
+  if(DVSOLID[sides])return DVSOLID[sides];
+  var s,i,t,v,f;
+  if(sides===4){
+    s=dvDual([[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]],
+             [[-1,-1,-1],[-1,1,1],[1,-1,1],[1,1,-1]]);
+  }else if(sides===6){
+    s=dvDual(dvCube(),[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]);
+  }else if(sides===8){
+    s=dvDual([[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]],dvCube());
+  }else if(sides===10){
+    /* Pentagonal trapezohedron: two apexes over two staggered rings of five,
+       ten kite faces between them. The kites are only planar when the apex
+       sits at 4phi+3 times the ring offset, so that ratio is not a guess. */
+    var a10=0.125,c10=a10*9.472136;
+    v=[[0,0,c10],[0,0,-c10]];f=[];
+    for(i=0;i<5;i++){t=i*1.256637;v.push([Math.cos(t),Math.sin(t),a10]);}
+    for(i=0;i<5;i++){t=(i+0.5)*1.256637;v.push([Math.cos(t),Math.sin(t),-a10]);}
+    for(i=0;i<5;i++)f.push([0,2+i,7+i,2+(i+1)%5]);
+    for(i=0;i<5;i++)f.push([1,7+(i+1)%5,2+(i+1)%5,7+i]);
+    s=dvFaces(v,f);
+  }else if(sides===12){
+    s=dvDual(dvDodec(),dvIcoB());
+  }else{
+    s=dvDual(dvIcoB(),dvDodec());  /* d20, and the d100 borrows it */
+  }
+  DVSOLID[sides]=s;
+  return s;
+}
+
+function dvSize(){
+  if(!dvCan)return;
+  var st=document.querySelector(".stage").getBoundingClientRect();
+  var dpr=Math.min(2,window.devicePixelRatio||1);
+  dvW=Math.max(140,Math.round(st.width));dvH=Math.max(140,Math.round(st.height));
+  dvCan.width=Math.round(dvW*dpr);dvCan.height=Math.round(dvH*dpr);
+  dvCan.style.width=dvW+"px";dvCan.style.height=dvH+"px";
+  dvCtx.setTransform(dpr,0,0,dpr,0,0);
+  if(dvBits.length)dvPaint();
+}
+function dvHex(h){
+  h=String(h||"").trim().replace("#","");
+  if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2);
+  var n=parseInt(h,16);
+  return isNaN(n)?[36,62,52]:[(n>>16)&255,(n>>8)&255,n&255];
+}
+function dvShade(c,k){
+  return "rgb("+Math.min(255,Math.round(c[0]*k))+","+
+    Math.min(255,Math.round(c[1]*k))+","+Math.min(255,Math.round(c[2]*k))+")";
+}
+function dvPalette(){
+  var cs=getComputedStyle(document.body),g=function(v,fb){
+    return (cs.getPropertyValue(v)||"").trim()||fb;};
+  return {body:dvHex(g("--accent-bg","#16332a")),edge:dvHex(g("--accent","#4fbf8f")),
+    ink:g("--bright","#cfe8db"),hi:g("--accent-hi","#8ef0c2"),
+    lo:g("--oxide","#c0603a"),font:cs.fontFamily};
+}
+
+function dvThrow(r,done){if(!dvOn()||!r)return done&&done([]);clearTimeout(dvTimer);dvSize();dvPal=dvPalette();dvSeed=(dRand(4294967295)>>>0)||1;var st=document.querySelector(".stage").getBoundingClientRect(),tr=document.querySelector(".dtray").getBoundingClientRect(),dz=document.getElementById("dice").getBoundingClientRect();dvRes=Math.max(0,Math.round(st.bottom-dz.top))+10;var ox=tr.left-st.left+tr.width*.5,oy=tr.top-st.top+tr.height*.4,tx=dvW*(narrow()?.5:.36),ty=(dvH-dvRes)*(narrow()?.42:.5),rad=Math.max(17,Math.min(30,Math.round(Math.min(dvW,dvH)/17))),dx=tx-ox,dy=ty-oy,dist=Math.hypot(dx,dy),aim=Math.atan2(dy,dx);dvBits=[];dvFade=1;dvAge=0;dvPrev=0;dvAcc=0;dvPhase=0;dvDone=done||null;for(var k=0;k<r.n;k++){var sol=dvSolidFor(r.s),N=sol.f.length,i,lab=[];if(r.s===N){for(i=1;i<=N;i++)lab.push(i);for(i=N-1;i>0;i--){var j=Math.floor(dvR()*(i+1)),q=lab[i];lab[i]=lab[j];lab[j]=q;}}else for(i=0;i<N;i++)lab.push(1+Math.floor(dvR()*r.s));var a=aim+(dvR()-.5)*.8,sp=dist*(.38+Math.pow(dvR(),1.7)*1.85);dvBits.push({sol:sol,lab:lab,s:r.s,r:rad,ii:2.5/(rad*rad),p:[ox+(dvR()-.5)*26,oy+(dvR()-.5)*20,rad*1.4+dvR()*26+k*7],v:[Math.cos(a)*sp,Math.sin(a)*sp,215+dvR()*250],w:[(dvR()-.5)*13,(dvR()-.5)*13,(dvR()-.5)*13],q:dvQRand(),calm:0,rest:false,up:0,value:null,hi:false,lo:false});}dvCan.classList.add("on");if(dvRaf)cancelAnimationFrame(dvRaf);dvRaf=requestAnimationFrame(dvStep);}
+
+/* A die topples onto whichever face is nearest the table, so the resting
+   face is aligned to point straight down and the reading is taken from
+   whichever face then sits uppermost. */
+function dvSettle(b){var u=0,best=-Infinity,i,n;for(i=0;i<b.sol.f.length;i++){n=dvQRot(b.q,b.sol.f[i].n);var score=n[2]*10+dvDot(n,DVCAM);if(score>best){best=score;u=i;}}b.up=u;b.value=b.lab[u];b.hi=b.value===b.s;b.lo=b.value===1;b.rest=true;b.v=[0,0,0];b.w=[0,0,0];}
+function dvTable(b){var i,rv,z,min=0,hit=null;for(i=0;i<b.sol.v.length;i++){rv=dvQRot(b.q,[b.sol.v[i][0]*b.r,b.sol.v[i][1]*b.r,b.sol.v[i][2]*b.r]);z=b.p[2]+rv[2];if(z<min){min=z;hit=rv;}}if(!hit)return;b.p[2]-=min;var rel=[b.v[0]+b.w[1]*hit[2]-b.w[2]*hit[1],b.v[1]+b.w[2]*hit[0]-b.w[0]*hit[2],b.v[2]+b.w[0]*hit[1]-b.w[1]*hit[0]];if(rel[2]>=0)return;var rn=dvCross(hit,[0,0,1]),j=-(1+DVE)*rel[2]/(1+b.ii*dvDot(rn,rn));b.v[2]+=j;var q=dvCross(hit,[0,0,j]);b.w=[b.w[0]+b.ii*q[0],b.w[1]+b.ii*q[1],b.w[2]+b.ii*q[2]];}
+function dvWalls(b){
+  var pad=b.r*1.02,lo=dvH-dvRes-pad;
+  var bump=false;
+  if(b.p[0]<pad&&b.v[0]<0){b.p[0]=pad;b.v[0]=-b.v[0]*DVWALL;bump=true;}
+  if(b.p[0]>dvW-pad&&b.v[0]>0){b.p[0]=dvW-pad;b.v[0]=-b.v[0]*DVWALL;bump=true;}
+  if(b.p[1]<pad&&b.v[1]<0){b.p[1]=pad;b.v[1]=-b.v[1]*DVWALL;bump=true;}
+  if(b.p[1]>lo&&b.v[1]>0){b.p[1]=lo;b.v[1]=-b.v[1]*DVWALL;bump=true;}
+  if(bump)b.w=[b.w[0]*0.6,b.w[1]*0.6,b.w[2]*0.6];
+}
+/* Dice knock each other about. Bounding spheres are close enough for the
+   shove, and the tangential part of the hit puts a spin on both. */
+function dvKnock(){
+  var i,j;
+  for(i=0;i<dvBits.length;i++)for(j=i+1;j<dvBits.length;j++){
+    var a=dvBits[i],b=dvBits[j];
+    var d=dvSub(b.p,a.p),dist=dvLen(d)||0.001,min=a.r+b.r;
+    if(dist>=min)continue;
+    var n=[d[0]/dist,d[1]/dist,d[2]/dist],push=(min-dist)/2;
+    if(!a.rest){a.p=[a.p[0]-n[0]*push,a.p[1]-n[1]*push,Math.max(0,a.p[2]-n[2]*push)];}
+    if(!b.rest){b.p=[b.p[0]+n[0]*push,b.p[1]+n[1]*push,Math.max(0,b.p[2]+n[2]*push)];}
+    var rel=dvSub(b.v,a.v),vn=dvDot(rel,n);
+    if(vn>=0)continue;
+    var jn=-(1+DVBUMP)*vn/2;
+    if(!a.rest)a.v=[a.v[0]-n[0]*jn,a.v[1]-n[1]*jn,a.v[2]-n[2]*jn];
+    if(!b.rest)b.v=[b.v[0]+n[0]*jn,b.v[1]+n[1]*jn,b.v[2]+n[2]*jn];
+    var vt=[rel[0]-n[0]*vn,rel[1]-n[1]*vn,rel[2]-n[2]*vn];
+    var sp=dvCross(n,vt);
+    if(!a.rest)a.w=[a.w[0]-sp[0]*0.03,a.w[1]-sp[1]*0.03,a.w[2]-sp[2]*0.03];
+    if(!b.rest)b.w=[b.w[0]+sp[0]*0.03,b.w[1]+sp[1]*0.03,b.w[2]+sp[2]*0.03];
+    if(a.rest)a.calm=0;
+    if(b.rest)b.calm=0;
+  }
+}
+function dvIntegrate(dt){dvAge+=dt;for(var i=0;i<dvBits.length;i++){var b=dvBits[i];if(b.rest)continue;b.v[2]-=DVG*dt;b.p=[b.p[0]+b.v[0]*dt,b.p[1]+b.v[1]*dt,b.p[2]+b.v[2]*dt];var w=dvLen(b.w);if(w>1e-5)b.q=dvQUnit(dvQMul(dvQAxis(b.w,w*dt),b.q));dvTable(b);dvWalls(b);if(b.p[2]<b.r*1.08){var rr=Math.exp(-3.8*dt),ra=Math.exp(-4.8*dt);b.v=[b.v[0]*rr,b.v[1]*rr,b.v[2]];b.w=[b.w[0]*ra,b.w[1]*ra,b.w[2]*ra];}var v=dvLen(b.v),a=dvLen(b.w);if(b.p[2]<b.r*1.03&&v<8&&a<.55)b.calm+=dt;else b.calm=0;if(b.calm>=.04||dvAge>5)dvSettle(b);}dvKnock();}
+function dvStep(t){var real=dvPrev?Math.min(.05,(t-dvPrev)/1000):1/60;dvPrev=t;if(dvPhase===2){dvFade-=real/DVFADE;dvPaint();if(dvFade>0)dvRaf=requestAnimationFrame(dvStep);else{dvCtx.clearRect(0,0,dvW,dvH);dvCan.classList.remove("on");dvBits=[];dvRaf=0;}return;}dvAcc+=real;for(var loops=0;dvAcc>=1/120&&loops++<8;){dvIntegrate(1/120);dvAcc-=1/120;}if(loops===8)dvAcc=0;dvPaint();if(dvBits.every(function(b){return b.rest;})){dvPhase=1;if(dvDone){dvDone(dvBits.map(function(b){return b.value;}));dvDone=null;}dvRaf=0;dvTimer=setTimeout(function(){dvPhase=2;dvPrev=0;dvRaf=requestAnimationFrame(dvStep);},DVREST*1000);}else dvRaf=requestAnimationFrame(dvStep);}
+function dvPaint(){
+  var c=dvCtx,pal=dvPal;
+  if(!c||!pal)return;
+  c.clearRect(0,0,dvW,dvH);
+  c.globalAlpha=dvFade;
+  c.lineJoin="round";
+  c.textAlign="center";c.textBaseline="middle";
+  var order=dvBits.slice().sort(function(a,b){
+    return (a.p[1]-a.p[2]*DVLIFT)-(b.p[1]-b.p[2]*DVLIFT);
+  });
+  order.forEach(function(b){
+    var near=1/(1+b.p[2]*0.011);
+    c.globalAlpha=0.34*near*dvFade;
+    c.fillStyle="#000";
+    c.beginPath();
+    c.ellipse(b.p[0],b.p[1],b.r*0.95*near,b.r*0.5*near,0,0,6.2832);
+    c.fill();
+    c.globalAlpha=dvFade;
+    var pts=b.sol.v.map(function(v){
+      var r=dvQRot(b.q,[v[0]*b.r,v[1]*b.r,v[2]*b.r]);
+      return [b.p[0]+r[0],b.p[1]+r[1]-(b.p[2]+r[2])*DVLIFT];
+    });
+    b.sol.f.forEach(function(f,fi){
+      var n=dvQRot(b.q,f.n),vis=dvDot(n,DVCAM);
+      if(vis<=0.015)return;
+      c.beginPath();
+      f.i.forEach(function(k,ix){
+        ix?c.lineTo(pts[k][0],pts[k][1]):c.moveTo(pts[k][0],pts[k][1]);
+      });
+      c.closePath();
+      /* the result has to be unmistakable, so the resting face lights up and
+         the other numbers drop back — you read a die off the top */
+      var top=b.rest&&fi===b.up;
+      var lit=0.40+0.60*Math.max(0,dvDot(n,DVLIGHT));
+      c.fillStyle=dvShade(pal.body,(0.55+lit*1.35)*(top?1.6:1));
+      c.fill();
+      c.strokeStyle=top?(b.hi?pal.hi:b.lo?pal.lo:dvShade(pal.edge,1.3))
+                       :dvShade(pal.edge,0.34+lit*0.5);
+      c.lineWidth=top?2:1.15;
+      c.stroke();
+      if(!top&&vis<0.52)return;
+      var cr=dvQRot(b.q,[f.c[0]*b.r*1.03,f.c[1]*b.r*1.03,f.c[2]*b.r*1.03]);
+      c.fillStyle=top?(b.hi?pal.hi:b.lo?pal.lo:pal.ink):pal.ink;
+      c.globalAlpha=dvFade*(top?1:(b.rest?0.26:1)*Math.min(1,(vis-0.52)*5.5));
+      c.font="700 "+Math.round(b.r*(top?0.60:0.30+0.28*vis))+"px "+pal.font;
+      c.fillText(b.lab[fi],b.p[0]+cr[0],b.p[1]+cr[1]-(b.p[2]+cr[2])*DVLIFT);
+      c.globalAlpha=dvFade;
+    });
+    if(b.rest){var tf=b.sol.f[b.up];c.beginPath();tf.i.forEach(function(k,x){x?c.lineTo(pts[k][0],pts[k][1]):c.moveTo(pts[k][0],pts[k][1]);});c.closePath();c.strokeStyle=b.hi?pal.hi:b.lo?pal.lo:dvShade(pal.edge,1.3);c.lineWidth=2.35;c.stroke();}
+  });
+  c.globalAlpha=1;
+}
+/* With the map throw switched off the dice tumble in the strip instead, one
+   settling after the next, the total adding up whatever is showing. */
+function dAnimate(rec,done){
+  var host=document.querySelector("#dTicker .dent");
+  var quiet=false;
+  try{quiet=matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(e){}
+  if(!host||quiet)return done();
+  var chips=Array.prototype.slice.call(host.querySelectorAll(".dface"));
+  var tot=host.querySelector(".dtot");
+  if(!chips.length||!tot)return done();
+  host.classList.add("rolling");
+  chips.forEach(function(c){c.classList.remove("set");});
+  var t0=Date.now(),settle=chips.map(function(c,i){return 330+i*95+Math.random()*70;});
+  var last=Math.max.apply(null,settle)+110;
+  (function step(){
+    var el=Date.now()-t0,sum=rec.m,all=true;
+    chips.forEach(function(c,i){
+      if(el<settle[i]){
+        all=false;
+        var v=dRand(rec.s);
+        c.textContent=v;sum+=v;
+        c.style.transform="translateY("+(Math.sin(el/34+i*2)*2.5).toFixed(2)+"px)";
+      }else{
+        if(!c.classList.contains("set")){
+          c.classList.add("set");c.textContent=rec.f[i];c.style.transform="";
+        }
+        sum+=rec.f[i];
+      }
+    });
+    tot.textContent=all?rec.t:sum;
+    if(el<last)requestAnimationFrame(step);
+    else{
+      tot.textContent=rec.t;
+      host.classList.remove("rolling");host.classList.add("landed");
+      setTimeout(function(){host.classList.remove("landed");},480);
+      done();
+    }
+  })();
+}
+function dCommit(rec){
+  dLog.push(rec);
+  if(dLog.length>DKEEP)dLog=dLog.slice(-DKEEP);
+}
+function dFinalize(r,f){r.f=f;r.t=r.m;f.forEach(function(v){r.t+=v;});r.crit=f.indexOf(r.s)>=0;r.fumble=r.n===1&&f[0]===1;return r;}
+function dThrow(){if(dRolling)return;var g=function(i){return document.getElementById(i);},n=+g("dCount").value||1,s=+g("dSides").value||20,m=+g("dMod").value||0,r={who:(g("dName").value||"").trim().slice(0,16),n:n,s:s,m:m,ts:Date.now(),cid:DCID};dRolling=true;g("dRoll").disabled=true;var done=function(){dRolling=false;g("dRoll").disabled=false;if(dPending){dLog=dPending;dPending=null;dTickerRender();}dLogRender();dModeRender();},post=function(f){dFinalize(r,f);dCommit(r);dSave();dTickerRender();var e=document.querySelector("#dTicker .dent");if(e){e.classList.add("landed");setTimeout(function(){e.classList.remove("landed");},480);}if(dSyncPush)dSyncPush(r);done();};if(dvOn())dvThrow(r,post);else{var f=[],i;for(i=0;i<n;i++)f.push(dRand(s));dFinalize(r,f);dCommit(r);dSave();dTickerRender();dAnimate(r,function(){if(dSyncPush)dSyncPush(r);done();});}try{localStorage.setItem("vesper:dice",JSON.stringify({n:n,s:s,m:m,who:r.who}));}catch(e){}}
+function diceLocale(){
+  var g=function(id){return document.getElementById(id);},e;
+  if(e=g("dName"))e.placeholder=T("yourName");
+  if(e=g("dRoll"))e.textContent=T("roll");
+  if(e=g("dShow"))e.textContent=T("dice");
+  if(e=g("dMin"))e.title=T("hideDice");
+  if(e=g("dExp"))e.title=T("rollLog");
+  if(dReady){dTickerRender();dLogRender();}
+}
+/* Optional shared strip. Nothing loads unless a sync URL is actually set,
+   so the standalone file stays standalone. */
+function dSyncInit(){
+  var url="";
+  try{url=new URLSearchParams(location.search).get("dice")||"";}catch(e){}
+  try{
+    if(url)localStorage.setItem("vesper:dicesync",url);
+    else url=localStorage.getItem("vesper:dicesync")||"";
+  }catch(e){}
+  url=(url||DATA.diceSync||"").replace(/\/+$/,"");
+  if(!url||!/^https:\/\//.test(url))return;
+  var room=String(DATA.title||"table").toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"table";
+  var base="https://www.gstatic.com/firebasejs/10.12.5/";
+  Promise.all([import(base+"firebase-app.js"),import(base+"firebase-database.js")])
+    .then(function(mods){
+      var db=mods[1].getDatabase(mods[0].initializeApp({databaseURL:url}));
+      var list=mods[1].ref(db,"vesper/"+room+"/rolls");
+      var first=true;
+      mods[1].onValue(mods[1].query(list,mods[1].limitToLast(DKEEP)),function(sn){
+        var out=[],fresh=null;
+        sn.forEach(function(c){
+          var v=c.val()||{};v.id=c.key;out.push(v);
+          if(dvSeen[c.key])return;
+          dvSeen[c.key]=1;
+          /* anything arriving after the first load is somebody else throwing,
+             so their dice roll across this map too */
+          if(!first&&v.cid!==DCID&&v.f&&v.f.length)fresh=v;
+        });
+        first=false;
+        if(dRolling){dPending=out;return;}
+        dLog=out;dTickerRender();dLogRender();
+        if(fresh)dvThrow(fresh,null);
+      });
+      dSyncPush=function(rec){
+        try{rec?mods[1].push(list,rec):mods[1].remove(list);}catch(e){}
+      };
+      dLog=[];dTickerRender();
+    })["catch"](function(){});
+}
+function dModeRender(){var b=document.getElementById("dMode");if(!b)return;var on=dvWant();b.textContent=on?"3D: ON":"3D: OFF";b.title=on?"3D throw enabled — click for instant result":"Instant result enabled — click for 3D throw";b.setAttribute("aria-pressed",on?"true":"false");}
+function diceInit(){
+  if(dReady)return;
+  var g=function(id){return document.getElementById(id);};
+  var cnt=g("dCount"),sid=g("dSides"),mod=g("dMod"),nm=g("dName"),btn=g("dRoll");
+  if(!cnt||!sid||!mod||!nm||!btn)return;
+  dReady=true;
+  var i,o;
+  var add=function(sel,val,txt){
+    o=document.createElement("option");o.value=val;o.textContent=txt;sel.appendChild(o);
+  };
+  for(i=1;i<=10;i++)add(cnt,i,i);
+  DSIDES.forEach(function(s){add(sid,s,s);});
+  for(i=-5;i<=10;i++)add(mod,i,(i>0?"+":"")+i);
+  var pref={};
+  try{pref=JSON.parse(localStorage.getItem("vesper:dice")||"{}")||{};}catch(e){}
+  try{
+    var saved=JSON.parse(localStorage.getItem("vesper:rolls")||"[]");
+    if(saved instanceof Array)dLog=saved.slice(-DKEEP);
+  }catch(e){}
+  cnt.value=pref.n||1;sid.value=pref.s||20;
+  mod.value=(pref.m===undefined?0:pref.m);nm.value=pref.who||"";
+  btn.onclick=dThrow;
+  g("dMode").onclick=function(){if(dRolling)return;try{localStorage.setItem("vesper:diceboard",dvWant()?"0":"1");}catch(e){}dModeRender();};
+  nm.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();dThrow();}};
+  g("dExp").onclick=function(){
+    var box=g("dLog"),open=box.classList.toggle("hidden")===false;
+    this.setAttribute("aria-expanded",open);
+    this.innerHTML=open?"&#9660;":"&#9650;";
+    if(open)dLogRender();
+  };
+  var mini=function(on){
+    g("dice").classList.toggle("min",on);
+    try{localStorage.setItem("vesper:dicemin",on?"1":"");}catch(e){}
+    fieldPad();
+  };
+  g("dMin").onclick=function(){mini(true);};
+  g("dShow").onclick=function(){mini(false);};
+  try{if(localStorage.getItem("vesper:dicemin"))g("dice").classList.add("min");}catch(e){}
+  dvCan=g("dvCan");
+  if(dvCan&&dvCan.getContext){dvCtx=dvCan.getContext("2d");dvSize();}
+  else dvCan=null;
+  window.addEventListener("resize",function(){if(dvBits.length)dvSize();});
+  window.addEventListener("beforeunload",function(){clearTimeout(dvTimer);});
+  diceLocale();dModeRender();dTickerRender();dLogRender();dSyncInit();
+}
+/* The panel docks to the bottom on a phone, so the dice have to sit above it. */
+function dockH(){
+  var h=0;
+  if(narrow()){
+    var gr=document.getElementById("sheetGrip"),tb=document.querySelector(".tabs");
+    h=(gr?gr.offsetHeight:0)+(tb?tb.offsetHeight:0);
+  }
+  document.documentElement.style.setProperty("--dockh",h+"px");
+  fieldPad();
+}
+/* Enough room under the map to scroll its bottom edge clear of the dice, but
+   only when the map is long enough to need it. Otherwise a zoomed-out map
+   would sit above a band of nothing. */
+function fieldPad(){
+  var f=document.querySelector(".field"),st=document.getElementById("stack"),
+      dz=document.getElementById("dice");
+  if(!f||!st||!dz)return;
+  var dock=parseFloat(getComputedStyle(document.documentElement)
+    .getPropertyValue("--dockh"))||0;
+  var base=narrow()?0:16;
+  var clear=Math.round(dz.getBoundingClientRect().height)+(narrow()?dock:14)+12;
+  f.style.paddingBottom=(st.offsetHeight+base>f.clientHeight-clear?clear:base)+"px";
+}
+window.addEventListener("resize",dockH);
+try{new ResizeObserver(fieldPad).observe(document.getElementById("stack"));}catch(e){}
 function boot(){
   applyPlayerTheme(pickTheme());
   document.getElementById("hTitle").textContent=DATA.title||T("regionMap");
@@ -1126,6 +1819,8 @@ function boot(){
   }
 }
 boot();
+diceInit();
+dockH();
 /* If a map.json sits beside this file (e.g. on GitHub Pages), prefer it —
    the GM updates one small file and players just refresh. Fails silently
    when opened straight off disk, which is the standalone case. */
@@ -1135,5 +1830,11 @@ if(typeof fetch==="function"){
         document.getElementById("hStamp").textContent=T("live");} })
     .catch(function(){});
 }
+
+/* Reliable in-memory 3D/instant preference; persistence is optional. */
+var dvModeMemory=dvWant();
+dvWant=function(){return dvModeMemory;};
+dModeRender=function(){var b=document.getElementById("dMode");if(!b)return;b.textContent=dvModeMemory?"3D: ON":"3D: OFF";b.title=dvModeMemory?"3D throw enabled — click for instant result":"Instant result enabled — click for 3D throw";b.setAttribute("aria-pressed",dvModeMemory?"true":"false");};
+(function(){var b=document.getElementById("dMode");if(!b)return;b.onclick=function(){if(dRolling)return;dvModeMemory=!dvModeMemory;try{localStorage.setItem("vesper:diceboard",dvModeMemory?"1":"0");}catch(e){}dModeRender();};dModeRender();})();
 })();
 </script>
