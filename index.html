@@ -394,7 +394,10 @@ var STR={
   noRolls:"Zatím žádné hody.",rollLog:"Záznam hodů",clearRolls:"Vymazat",
   hideDice:"Skrýt kostky",onMap:"Házet po mapě",
   signInToRoll:"Přihlásit se",needPass:"Zadej heslo.",signingIn:"Přihlašuji…",
-  wrongPass:"Špatné heslo.",signInFailed:"Přihlášení selhalo."},
+  wrongPass:"Špatné heslo.",signInFailed:"Přihlášení selhalo.",
+  passFor:"Heslo pro",badLogin:"Špatné heslo, nebo takový účet neexistuje.",
+  noProvider:"Ve Firebase není zapnuté přihlášení e-mailem a heslem.",
+  badKey:"Firebase ten api klíč nepřijalo.",tooMany:"Příliš mnoho pokusů, chvíli počkej."},
  en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
   clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
   clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
@@ -423,7 +426,10 @@ var STR={
   noRolls:"No rolls yet.",rollLog:"Roll log",clearRolls:"Clear",
   hideDice:"Hide dice",onMap:"Throw on the map",
   signInToRoll:"Sign in to roll",needPass:"Enter the password.",signingIn:"Signing in…",
-  wrongPass:"Wrong password.",signInFailed:"Sign-in failed."}
+  wrongPass:"Wrong password.",signInFailed:"Sign-in failed.",
+  passFor:"Password for",badLogin:"Wrong password, or no such account.",
+  noProvider:"Email/Password sign-in is not switched on in Firebase.",
+  badKey:"Firebase did not accept that api key.",tooMany:"Too many tries, wait a minute."}
 };
 var LOC="cs";
 try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
@@ -1970,6 +1976,10 @@ function dGateRender(){
   btn.classList.toggle("locked",locked);
   btn.textContent=locked?T("signInToRoll"):T("roll");
   if(!locked)gate.classList.add("hidden");
+  /* Naming the account here makes the commonest failure obvious: the address
+     in the file not matching the one created in the console. */
+  var f=g("dPass");
+  if(f&&dGateCfg)f.placeholder=T("passFor")+" "+dGateCfg.user;
 }
 function dGateOpen(){
   var g=document.getElementById("dGate");
@@ -1997,9 +2007,17 @@ function dGateTry(){
       dSignedIn=true;dGateRender();dSyncConnect();
     })["catch"](function(err){
       dGateBusy=false;
-      msg.textContent=(String(err&&err.code||"").indexOf("wrong-password")>=0||
-                       String(err&&err.code||"").indexOf("invalid-credential")>=0)
-        ?T("wrongPass"):T("signInFailed");
+      var code=String(err&&err.code||err&&err.message||"?");
+      /* Firebase collapses "wrong password" and "no such account" into one
+         code, so the code itself goes on screen rather than a guess at it. */
+      var why=T("signInFailed");
+      if(code.indexOf("operation-not-allowed")>=0)why=T("noProvider");
+      else if(code.indexOf("api-key")>=0)why=T("badKey");
+      else if(code.indexOf("too-many-requests")>=0)why=T("tooMany");
+      else if(code.indexOf("invalid-credential")>=0||code.indexOf("wrong-password")>=0||
+              code.indexOf("user-not-found")>=0)why=T("badLogin");
+      msg.textContent=why+"  ("+code+")";
+      if(window.console&&console.warn)console.warn("dice sign-in:",err);
     });
 }
 function dSyncInit(){
@@ -2020,6 +2038,12 @@ function dSyncInit(){
   try{
     var qs=new URLSearchParams(location.search);
     key=qs.get("dkey")||"";user=qs.get("duser")||"";
+    /* Remembered the same way the database link is, so a key handed out on the
+       URL only has to be clicked once — and never has to sit in the repo. */
+    if(key)localStorage.setItem("vesper:dicekey",key);
+    else key=localStorage.getItem("vesper:dicekey")||"";
+    if(user)localStorage.setItem("vesper:diceuser",user);
+    else user=localStorage.getItem("vesper:diceuser")||"";
   }catch(e){}
   var cfg=DATA.diceSync;
   if(cfg&&typeof cfg==="object"){
@@ -2034,7 +2058,7 @@ function dSyncInit(){
   }
   if(key){
     /* Firebase does the checking, so nothing here has to be kept secret. */
-    dGateCfg={url:url,key:key,user:user||"table@vesper.local",
+    dGateCfg={url:url,key:key,user:(user||"table@vesper.game").trim(),
               domain:domain||undefined};
     dSyncRoom=room;
     dGateRender();
