@@ -187,7 +187,10 @@ h1{display:flex;align-items:baseline}
   color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:13px;line-height:1;padding:0}
 .dmin:hover{color:var(--bright);border-color:var(--dim)}
 .dsel{display:flex;align-items:center;gap:4px}
-.dsel span{color:var(--dim);font-size:11px;flex:none}
+.dfield{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dfield>span{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dfield select{flex:none;width:100%}
 .dsel select{flex:1;min-width:0;background:var(--void);color:var(--bright);
   border:1px solid var(--line);font:inherit;font-size:11px;padding:4px 3px;cursor:pointer;
   -webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
@@ -321,7 +324,7 @@ h1{display:flex;align-items:baseline}
             <button class="dmin" id="dMin">&minus;</button>
           </div>
           <div class="dsel">
-            <select id="dCount" aria-label="Dice"></select><span>d</span><select id="dSides" aria-label="Die"></select><select id="dMod" aria-label="Modifier"></select>
+            <label class="dfield"><span id="dLbA"></span><select id="dCount" aria-label="Amount"></select></label><label class="dfield"><span id="dLbD"></span><select id="dSides" aria-label="Dice"></select></label><label class="dfield"><span id="dLbM"></span><select id="dMod" aria-label="Modifier"></select></label>
           </div>
           <div class="dgate hidden" id="dGate">
             <input type="password" id="dPass" placeholder="Table password" autocomplete="current-password">
@@ -397,7 +400,8 @@ var STR={
   wrongPass:"Špatné heslo.",signInFailed:"Přihlášení selhalo.",
   passFor:"Heslo pro",badLogin:"Špatné heslo, nebo takový účet neexistuje.",
   noProvider:"Ve Firebase není zapnuté přihlášení e-mailem a heslem.",
-  badKey:"Firebase ten api klíč nepřijalo.",tooMany:"Příliš mnoho pokusů, chvíli počkej."},
+  badKey:"Firebase ten api klíč nepřijalo.",tooMany:"Příliš mnoho pokusů, chvíli počkej.",
+  amount:"Počet",modifier:"Modif."},
  en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
   clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
   clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
@@ -429,7 +433,8 @@ var STR={
   wrongPass:"Wrong password.",signInFailed:"Sign-in failed.",
   passFor:"Password for",badLogin:"Wrong password, or no such account.",
   noProvider:"Email/Password sign-in is not switched on in Firebase.",
-  badKey:"Firebase did not accept that api key.",tooMany:"Too many tries, wait a minute."}
+  badKey:"Firebase did not accept that api key.",tooMany:"Too many tries, wait a minute.",
+  amount:"Amount",modifier:"Modifier"}
 };
 var LOC="cs";
 try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
@@ -1328,7 +1333,7 @@ function legend(){
    is how it behaved before.                                            */
 var DICECFG={
   databaseURL:"https://dice-tracker-bd919-default-rtdb.europe-west1.firebasedatabase.app",
-  apiKey:"AIzaSyC-enYp_64Srby729Ju-EefDRrW56sF-CI",                    /* <-- paste yours here to switch the password on */
+  apiKey:"",                    /* <-- paste yours here to switch the password on */
   user:"table@vesper.game"      /* the one account to create in Firebase Auth */
 };
 var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
@@ -1415,6 +1420,7 @@ var DVG=1150,DVE=0.44,DVMU=0.42,DVWALL=0.5,DVBUMP=0.46;
 var DVREST=5.2,DVFADE=0.7;                         /* seconds the dice lie there, then the fade */
 var DTALLY=2000;                                   /* pause after they stop before the strip takes the score */
 var DVCASTS=8;                                     /* how many throws may share the table */
+var DVSTALE=12;                                    /* seconds: past this a replay only reaches the strip */
 var DVINKD="#0A1512",DVINKL="#F4FBF7";             /* the two inks a face may use */
 var DVPASTEL=["#9FD8C8","#A9C8EF","#E7B7C8","#EFD9A3","#C9BCE8",
               "#F0B9A0","#B9E2A7","#D8CFE0","#A6DCE4","#E9C6A0"];
@@ -1590,6 +1596,16 @@ function dvPalette(){
    everybody rolls at the same moment and queueing them would be a lie about
    what happened. They share one simulation, so a die from one cast knocks a die
    from another exactly as it would knock its own. */
+/* A backgrounded tab stops animating but Firebase keeps delivering, so without
+   this every roll made while you were away would land on the board at once the
+   moment you came back. A roll only goes on the table if this tab could
+   actually have shown it as it happened. It still reaches the strip and the
+   log either way — that is the record; the board is only what just happened. */
+function dvReplayable(v){
+  try{if(document.hidden)return false;}catch(e){}
+  if(v&&v.ts&&Date.now()-v.ts>DVSTALE*1000)return false;
+  return true;
+}
 function dvColour(r){
   var hex=String(r.c||"");
   if(!/^#?[0-9a-fA-F]{6}$/.test(hex))hex=dvPastel(r.who||"");
@@ -1997,6 +2013,9 @@ function diceLocale(){
   var g=function(id){return document.getElementById(id);},e;
   if(e=g("dName"))e.placeholder=T("yourName");
   if(e=g("dRoll"))e.textContent=T("roll");
+  if(e=g("dLbA"))e.textContent=T("amount");
+  if(e=g("dLbD"))e.textContent=T("dice");
+  if(e=g("dLbM"))e.textContent=T("modifier");
   dGateRender();
   if(e=g("dShow"))e.textContent=T("dice");
   if(e=g("dMin"))e.title=T("hideDice");
@@ -2154,7 +2173,7 @@ function dSyncConnect(){
         /* Straight onto the table, whatever else is already in the air. At a
            group check everybody rolls at once, and holding one back would be a
            lie about what happened. */
-        arriving.forEach(function(v){dvThrow(v,null);});
+        arriving.forEach(function(v){if(dvReplayable(v))dvThrow(v,null);});
         if(dRolling){dPending=out;return;}
         dLog=out;dTickerRender();dLogRender();
       });
@@ -2176,8 +2195,10 @@ function diceInit(){
     o=document.createElement("option");o.value=val;o.textContent=txt;sel.appendChild(o);
   };
   for(i=1;i<=10;i++)add(cnt,i,i);
-  DSIDES.forEach(function(s){add(sid,s,s);});
-  for(i=-5;i<=10;i++)add(mod,i,(i>0?"+":"")+i);
+  DSIDES.forEach(function(s){add(sid,s,"d"+s);});
+  /* The sign belongs in the option text now the column is captioned: a bare
+     number under "Modifier" could be either, a signed one cannot. */
+  for(i=-5;i<=10;i++)add(mod,i,i>0?"+"+i:i<0?"\u2212"+(-i):"0");
   var pref={};
   try{pref=JSON.parse(localStorage.getItem("vesper:dice")||"{}")||{};}catch(e){}
   try{
