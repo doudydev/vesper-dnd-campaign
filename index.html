@@ -1328,7 +1328,7 @@ function legend(){
    is how it behaved before.                                            */
 var DICECFG={
   databaseURL:"https://dice-tracker-bd919-default-rtdb.europe-west1.firebasedatabase.app",
-  apiKey:"AIzaSyC-enYp_64Srby729Ju-EefDRrW56sF-CI",                    /* <-- paste yours here to switch the password on */
+  apiKey:"",                    /* <-- paste yours here to switch the password on */
   user:"table@vesper.game"      /* the one account to create in Firebase Auth */
 };
 var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
@@ -1646,6 +1646,7 @@ function dvThrow(r,done){
   }
   dvCast.push(cast);
   while(dvCast.length>DVCASTS)dvCast.shift();
+  dvReseat();
   dvCan.classList.add("on");
   if(!dvRaf){dvPrev=0;dvAcc=0;dvRaf=requestAnimationFrame(dvStep);}
 }
@@ -1713,31 +1714,79 @@ function dvKnock(all){
   }
 }
 
+function dvAdvance(bits,dt,age){
+  var i,b;
+  for(i=0;i<bits.length;i++){
+    b=bits[i];
+    if(b.rest)continue;
+    b.v[2]-=DVG*dt;
+    b.p=[b.p[0]+b.v[0]*dt,b.p[1]+b.v[1]*dt,b.p[2]+b.v[2]*dt];
+    var w=dvLen(b.w);
+    if(w>1e-5)b.q=dvQUnit(dvQMul(dvQAxis(b.w,w*dt),b.q));
+    dvTable(b);dvWalls(b);
+    if(b.p[2]<b.r*1.08){
+      var rr=Math.exp(-3.8*dt),ra=Math.exp(-4.8*dt);
+      b.v=[b.v[0]*rr,b.v[1]*rr,b.v[2]];
+      b.w=[b.w[0]*ra,b.w[1]*ra,b.w[2]*ra];
+    }
+    var v=dvLen(b.v),a=dvLen(b.w);
+    if(b.p[2]<b.r*1.03&&v<8&&a<.55)b.calm+=dt;else b.calm=0;
+    if(b.calm>=.04||age>5)dvSettle(b);
+  }
+}
 function dvIntegrate(dt){
-  var all=[],ci,bi,cst,b;
+  var all=[],ci,cst;
   for(ci=0;ci<dvCast.length;ci++){
     cst=dvCast[ci];cst.age+=dt;
-    for(bi=0;bi<cst.bits.length;bi++){
-      b=cst.bits[bi];all.push(b);
-      if(b.rest)continue;
-      b.v[2]-=DVG*dt;
-      b.p=[b.p[0]+b.v[0]*dt,b.p[1]+b.v[1]*dt,b.p[2]+b.v[2]*dt];
-      var w=dvLen(b.w);
-      if(w>1e-5)b.q=dvQUnit(dvQMul(dvQAxis(b.w,w*dt),b.q));
-      dvTable(b);dvWalls(b);
-      if(b.p[2]<b.r*1.08){
-        var rr=Math.exp(-3.8*dt),ra=Math.exp(-4.8*dt);
-        b.v=[b.v[0]*rr,b.v[1]*rr,b.v[2]];
-        b.w=[b.w[0]*ra,b.w[1]*ra,b.w[2]*ra];
-      }
-      var v=dvLen(b.v),a=dvLen(b.w);
-      if(b.p[2]<b.r*1.03&&v<8&&a<.55)b.calm+=dt;else b.calm=0;
-      if(b.calm>=.04||cst.age>5)dvSettle(b);
-    }
+    dvAdvance(cst.bits,dt,cst.age);
+    all=all.concat(cst.bits);
   }
   dvKnock(all);
 }
+/* Somebody else's roll arrives with its numbers already decided, so each die
+   has to finish on one particular face. Rather than swap the label in
+   underneath the reader at the moment it stops, the whole table is run forward
+   once with nothing drawn to find out where every die is going to come to
+   rest, and the recorded numbers are put on those faces while the dice are
+   still in the air — where a relabel cannot be seen.
 
+   The fixed 1/120 step is what makes this exact: a body's state after N steps
+   does not depend on how those steps were spread across frames. The bodies are
+   also cloned in the same order the live loop walks them, because the contact
+   solver resolves pairs in sequence and a different order gives a different
+   answer.
+
+   It is redone on every arrival, so a throw already in flight is re-seated
+   against the one that just landed on top of it. dvSettle still corrects
+   anything the prediction missed, the old way.                              */
+function dvReseat(){
+  var all=[],ci;
+  for(ci=0;ci<dvCast.length;ci++)all=all.concat(dvCast[ci].bits);
+  if(!all.length||all.length>40)return;
+  var waiting=false,i;
+  for(i=0;i<all.length;i++)if(all[i].want!=null&&!all[i].rest){waiting=true;break;}
+  if(!waiting)return;
+  var copies=all.map(function(b){
+    return {sol:b.sol,lab:b.lab.slice(),s:b.s,r:b.r,ii:b.ii,
+            p:b.p.slice(),v:b.v.slice(),w:b.w.slice(),q:b.q.slice(),
+            calm:b.calm,rest:b.rest,up:b.up,value:b.value,
+            want:null,hi:false,lo:false};
+  });
+  var age=0,n=0;
+  while(age<5.2&&n++<700){
+    age+=1/120;
+    dvAdvance(copies,1/120,age);
+    dvKnock(copies);
+    if(copies.every(function(b){return b.rest;}))break;
+  }
+  all.forEach(function(b,k){
+    var c=copies[k];
+    if(b.want==null||b.rest||!c.rest)return;
+    var u=c.up,j=b.lab.indexOf(b.want);
+    if(j<0)b.lab[u]=b.want;
+    else if(j!==u){var t=b.lab[u];b.lab[u]=b.lab[j];b.lab[j]=t;}
+  });
+}
 function dvStep(t){
   var real=dvPrev?Math.min(.05,(t-dvPrev)/1000):1/60;
   dvPrev=t;
