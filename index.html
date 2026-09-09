@@ -177,6 +177,11 @@ h1{display:flex;align-items:baseline}
 .dtop{display:flex;gap:6px;align-items:center}
 #dName{flex:1;min-width:0;background:var(--void);border:1px solid var(--line);
   color:var(--bright);font:inherit;font-size:11px;padding:4px 6px}
+.dswatch{flex:none;width:21px;height:21px;padding:0;cursor:pointer;
+  background:none;border:1px solid var(--line);border-radius:0}
+.dswatch::-webkit-color-swatch-wrapper{padding:2px}
+.dswatch::-webkit-color-swatch{border:0}
+.dswatch::-moz-color-swatch{border:0}
 #dName:focus{outline:none;border-color:var(--accent)}
 .dmin{flex:none;width:21px;height:21px;background:none;border:1px solid var(--line);
   color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:13px;line-height:1;padding:0}
@@ -188,6 +193,15 @@ h1{display:flex;align-items:baseline}
   -webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
 .dsel select:focus{outline:none;border-color:var(--accent)}
 .dsel option{background:var(--panel);color:var(--bright)}
+.dgate{display:flex;flex-wrap:wrap;gap:5px}
+.dgate.hidden{display:none}
+#dPass{flex:1;min-width:0;background:var(--void);border:1px solid var(--line);
+  color:var(--bright);font:inherit;font-size:11px;padding:4px 6px}
+#dPassGo{flex:none;background:var(--panel2);border:1px solid var(--line);color:var(--bone);
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:4px 8px;cursor:pointer}
+#dPassGo:hover{color:var(--bright);border-color:var(--dim)}
+.dgatemsg{flex:0 0 100%;font-size:10px;color:var(--oxide);min-height:12px}
+.droll.locked{background:none;color:var(--dim);border-color:var(--line)}
 .droll{background:var(--accent-bg);border:1px solid var(--accent);color:var(--accent-hi);
   font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
   padding:8px 4px;cursor:pointer}
@@ -303,11 +317,16 @@ h1{display:flex;align-items:baseline}
         </div>
         <div class="dtray">
           <div class="dtop">
-            <input type="text" id="dName" maxlength="16" autocomplete="nickname">
+            <input type="color" id="dCol" class="dswatch" aria-label="Your dice colour"><input type="text" id="dName" maxlength="16" autocomplete="nickname">
             <button class="dmin" id="dMin">&minus;</button>
           </div>
           <div class="dsel">
             <select id="dCount" aria-label="Dice"></select><span>d</span><select id="dSides" aria-label="Die"></select><select id="dMod" aria-label="Modifier"></select>
+          </div>
+          <div class="dgate hidden" id="dGate">
+            <input type="password" id="dPass" placeholder="Table password" autocomplete="current-password">
+            <button id="dPassGo" type="button">Sign in</button>
+            <div class="dgatemsg" id="dGateMsg"></div>
           </div>
           <button class="droll" id="dRoll">Roll</button><button id="dMode" type="button" style="background:var(--panel2);border:1px solid var(--line);color:var(--bone);font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:5px 4px;cursor:pointer">3D: ON</button>
         </div>
@@ -373,7 +392,9 @@ var STR={
   backToWiki:"Zpět na wiki",showOnMap:"Ukázat na mapě",
   dice:"Kostky",roll:"Hodit",yourName:"Jméno",player:"Hráč",
   noRolls:"Zatím žádné hody.",rollLog:"Záznam hodů",clearRolls:"Vymazat",
-  hideDice:"Skrýt kostky",onMap:"Házet po mapě"},
+  hideDice:"Skrýt kostky",onMap:"Házet po mapě",
+  signInToRoll:"Přihlásit se",needPass:"Zadej heslo.",signingIn:"Přihlašuji…",
+  wrongPass:"Špatné heslo.",signInFailed:"Přihlášení selhalo."},
  en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
   clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
   clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
@@ -400,7 +421,9 @@ var STR={
   backToWiki:"Back to wiki",showOnMap:"Show on map",
   dice:"Dice",roll:"Roll",yourName:"Name",player:"Player",
   noRolls:"No rolls yet.",rollLog:"Roll log",clearRolls:"Clear",
-  hideDice:"Hide dice",onMap:"Throw on the map"}
+  hideDice:"Hide dice",onMap:"Throw on the map",
+  signInToRoll:"Sign in to roll",needPass:"Enter the password.",signingIn:"Signing in…",
+  wrongPass:"Wrong password.",signInFailed:"Sign-in failed."}
 };
 var LOC="cs";
 try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
@@ -1288,6 +1311,20 @@ function legend(){
    Rolls are thrown here and kept in this browser. If the GM hands out a
    link with ?dice=<firebase realtime db url> on the end, or drops a
    "diceSync" key into map.json, everyone at the table sees the same strip. */
+/* ---- shared dice, if you want them --------------------------------
+   Fill these in and every export carries them, so the link stays a plain
+   link. None of it is a secret: the database URL and the api key both
+   identify the project rather than open it. What keeps people out is the
+   rule requiring auth, and the password, which Firebase checks — never
+   this file. Setup is in the notes.
+
+   Leave apiKey empty and the strip is open to anyone with the URL, which
+   is how it behaved before.                                            */
+var DICECFG={
+  databaseURL:"https://dice-tracker-bd919-default-rtdb.europe-west1.firebasedatabase.app",
+  apiKey:"AIzaSyC-enYp_64Srby729Ju-EefDRrW56sF-CI",                    /* <-- paste yours here to switch the password on */
+  user:"table@vesper.game"      /* the one account to create in Firebase Auth */
+};
 var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
 var DCID=Math.random().toString(36).slice(2,10);
 var dLog=[],dRolling=false,dReady=false,dPending=null,dSyncPush=null;
@@ -1370,8 +1407,13 @@ var DVLIFT=0.72;                                   /* how far height lifts a die
 var DVCAM=[0,0.62,0.78],DVLIGHT=[-0.34,-0.44,0.83];
 var DVG=1150,DVE=0.44,DVMU=0.42,DVWALL=0.5,DVBUMP=0.46;
 var DVREST=5.2,DVFADE=0.7;                         /* seconds the dice lie there, then the fade */
-var DVSOLID={},dvCan=null,dvCtx=null,dvBits=[],dvRaf=0,dvTimer=0,dvPrev=0,
-    dvW=0,dvH=0,dvRes=0,dvFade=1,dvAge=0,dvPhase=0,dvDone=null,dvPal=null,dvSeen={};
+var DTALLY=2000;                                   /* pause after they stop before the strip takes the score */
+var DVCASTS=8;                                     /* how many throws may share the table */
+var DVINKD="#0A1512",DVINKL="#F4FBF7";             /* the two inks a face may use */
+var DVPASTEL=["#9FD8C8","#A9C8EF","#E7B7C8","#EFD9A3","#C9BCE8",
+              "#F0B9A0","#B9E2A7","#D8CFE0","#A6DCE4","#E9C6A0"];
+var DVSOLID={},dvCan=null,dvCtx=null,dvCast=[],dvRaf=0,dvPrev=0,
+    dvW=0,dvH=0,dvRes=0,dvPal=null,dvSeen={},dvLastLand=0;
 
 function dvQuiet(){
   try{return matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(e){return false;}
@@ -1517,7 +1559,7 @@ function dvSize(){
   dvCan.width=Math.round(dvW*dpr);dvCan.height=Math.round(dvH*dpr);
   dvCan.style.width=dvW+"px";dvCan.style.height=dvH+"px";
   dvCtx.setTransform(dpr,0,0,dpr,0,0);
-  if(dvBits.length)dvPaint();
+  if(dvCast.length)dvPaint();
 }
 function dvHex(h){
   h=String(h||"").trim().replace("#","");
@@ -1537,12 +1579,97 @@ function dvPalette(){
     lo:g("--oxide","#c0603a"),font:cs.fontFamily};
 }
 
-function dvThrow(r,done){if(!dvOn()||!r)return done&&done([]);clearTimeout(dvTimer);dvSize();dvPal=dvPalette();dvSeed=(dRand(4294967295)>>>0)||1;var st=document.querySelector(".stage").getBoundingClientRect(),tr=document.querySelector(".dtray").getBoundingClientRect(),dz=document.getElementById("dice").getBoundingClientRect();dvRes=Math.max(0,Math.round(st.bottom-dz.top))+10;var ox=tr.left-st.left+tr.width*.5,oy=tr.top-st.top+tr.height*.4,tx=dvW*(narrow()?.5:.36),ty=(dvH-dvRes)*(narrow()?.42:.5),rad=Math.max(17,Math.min(30,Math.round(Math.min(dvW,dvH)/17))),dx=tx-ox,dy=ty-oy,dist=Math.hypot(dx,dy),aim=Math.atan2(dy,dx);dvBits=[];dvFade=1;dvAge=0;dvPrev=0;dvAcc=0;dvPhase=0;dvDone=done||null;for(var k=0;k<r.n;k++){var sol=dvSolidFor(r.s),N=sol.f.length,i,lab=[];if(r.s===N){for(i=1;i<=N;i++)lab.push(i);for(i=N-1;i>0;i--){var j=Math.floor(dvR()*(i+1)),q=lab[i];lab[i]=lab[j];lab[j]=q;}}else for(i=0;i<N;i++)lab.push(1+Math.floor(dvR()*r.s));var a=aim+(dvR()-.5)*.8,sp=dist*(.38+Math.pow(dvR(),1.7)*1.85);dvBits.push({sol:sol,lab:lab,s:r.s,r:rad,ii:2.5/(rad*rad),p:[ox+(dvR()-.5)*26,oy+(dvR()-.5)*20,rad*1.4+dvR()*26+k*7],v:[Math.cos(a)*sp,Math.sin(a)*sp,215+dvR()*250],w:[(dvR()-.5)*13,(dvR()-.5)*13,(dvR()-.5)*13],q:dvQRand(),calm:0,rest:false,up:0,value:null,want:(r.f&&r.f.length===r.n)?r.f[k]:null,hi:false,lo:false});}dvCan.classList.add("on");if(dvRaf)cancelAnimationFrame(dvRaf);dvRaf=requestAnimationFrame(dvStep);}
+/* Each throw is a cast: its own dice, its own owner, its own colour, its own
+   rest and fade. Several can be on the table at once, because at a group check
+   everybody rolls at the same moment and queueing them would be a lie about
+   what happened. They share one simulation, so a die from one cast knocks a die
+   from another exactly as it would knock its own. */
+function dvColour(r){
+  var hex=String(r.c||"");
+  if(!/^#?[0-9a-fA-F]{6}$/.test(hex))hex=dvPastel(r.who||"");
+  return dvHex(hex);
+}
+function dvPastel(name){
+  var h=0,i;
+  for(i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))>>>0;
+  if(!name)h=Math.floor(dvR()*4294967295)>>>0;
+  return DVPASTEL[h%DVPASTEL.length];
+}
+function dvLum(c){return (0.2126*c[0]+0.7152*c[1]+0.0722*c[2])/255;}
+function dvMix(c,k){
+  return [Math.min(255,c[0]*k),Math.min(255,c[1]*k),Math.min(255,c[2]*k)];
+}
+function dvRGB(c){
+  return "rgb("+Math.round(c[0])+","+Math.round(c[1])+","+Math.round(c[2])+")";
+}
+/* Pick ink against the face actually being painted, not against the base
+   colour, because the lighting can take a pale pastel most of the way to white. */
+function dvInk(fill){return dvLum(fill)>0.56?DVINKD:DVINKL;}
+function dvTint(fill,tint){
+  var t=dvHex(tint);
+  return Math.abs(dvLum(fill)-dvLum(t))>0.3?dvRGB(t):dvInk(fill);
+}
 
-/* A die topples onto whichever face is nearest the table, so the resting
-   face is aligned to point straight down and the reading is taken from
-   whichever face then sits uppermost. */
-function dvSettle(b){var u=0,best=-Infinity,i,n;for(i=0;i<b.sol.f.length;i++){n=dvQRot(b.q,b.sol.f[i].n);var score=n[2]*10+dvDot(n,DVCAM);if(score>best){best=score;u=i;}}b.up=u;if(b.want!=null){var jw=b.lab.indexOf(b.want);if(jw<0)b.lab[u]=b.want;else{var tw=b.lab[u];b.lab[u]=b.lab[jw];b.lab[jw]=tw;}}b.value=b.lab[u];b.hi=b.value===b.s;b.lo=b.value===1;b.rest=true;b.v=[0,0,0];b.w=[0,0,0];}
+function dvThrow(r,done){
+  if(!dvOn()||!r)return done&&done([]);
+  dvSize();dvPal=dvPalette();
+  dvSeed=(dRand(4294967295)>>>0)||1;
+  var st=document.querySelector(".stage").getBoundingClientRect(),
+      tr=document.querySelector(".dtray").getBoundingClientRect(),
+      dz=document.getElementById("dice").getBoundingClientRect();
+  dvRes=Math.max(0,Math.round(st.bottom-dz.top))+10;
+  var ox=tr.left-st.left+tr.width*.5,oy=tr.top-st.top+tr.height*.4,
+      tx=dvW*(narrow()?.5:.36),ty=(dvH-dvRes)*(narrow()?.42:.5),
+      rad=Math.max(17,Math.min(30,Math.round(Math.min(dvW,dvH)/17))),
+      dx=tx-ox,dy=ty-oy,dist=Math.hypot(dx,dy),aim=Math.atan2(dy,dx);
+  var cast={bits:[],phase:0,age:0,hold:0,fade:1,done:done||null,
+            who:String(r.who||""),col:dvColour(r)};
+  for(var k=0;k<r.n;k++){
+    var sol=dvSolidFor(r.s),N=sol.f.length,i,lab=[];
+    if(r.s===N){
+      for(i=1;i<=N;i++)lab.push(i);
+      for(i=N-1;i>0;i--){var j=Math.floor(dvR()*(i+1)),q=lab[i];lab[i]=lab[j];lab[j]=q;}
+    }else for(i=0;i<N;i++)lab.push(1+Math.floor(dvR()*r.s));
+    var a=aim+(dvR()-.5)*.8,sp=dist*(.38+Math.pow(dvR(),1.7)*1.85);
+    cast.bits.push({sol:sol,lab:lab,s:r.s,r:rad,ii:2.5/(rad*rad),cast:cast,
+      p:[ox+(dvR()-.5)*26,oy+(dvR()-.5)*20,rad*1.4+dvR()*26+k*7],
+      v:[Math.cos(a)*sp,Math.sin(a)*sp,215+dvR()*250],
+      w:[(dvR()-.5)*13,(dvR()-.5)*13,(dvR()-.5)*13],
+      q:dvQRand(),calm:0,rest:false,up:0,value:null,
+      want:(r.f&&r.f.length===r.n)?r.f[k]:null,hi:false,lo:false});
+  }
+  dvCast.push(cast);
+  while(dvCast.length>DVCASTS)dvCast.shift();
+  dvCan.classList.add("on");
+  if(!dvRaf){dvPrev=0;dvAcc=0;dvRaf=requestAnimationFrame(dvStep);}
+}
+
+/* A die topples onto whichever face is nearest the table, so the resting face
+   is aligned to point straight down and the reading is taken from whichever
+   face then sits uppermost. The first reading is pinned: once a die has said
+   what it is, being shoved by somebody else's dice must not change its mind. */
+function dvSettle(b){
+  var u=0,best=-Infinity,i,n;
+  for(i=0;i<b.sol.f.length;i++){
+    n=dvQRot(b.q,b.sol.f[i].n);
+    var score=n[2]*10+dvDot(n,DVCAM);
+    if(score>best){best=score;u=i;}
+  }
+  b.up=u;
+  if(b.want!=null){
+    var jw=b.lab.indexOf(b.want);
+    if(jw<0)b.lab[u]=b.want;
+    else{var tw=b.lab[u];b.lab[u]=b.lab[jw];b.lab[jw]=tw;}
+  }
+  b.value=b.lab[u];
+  if(b.want==null)b.want=b.value;
+  b.hi=b.value===b.s;b.lo=b.value===1;
+  b.rest=true;b.v=[0,0,0];b.w=[0,0,0];
+}
+
+/* Every die on the table, whoever threw it. A die already lying there is still
+   a solid object: a hard enough hit wakes it and it settles again, which is
+   safe because its number is pinned. */
 function dvTable(b){var i,rv,z,min=0,hit=null;for(i=0;i<b.sol.v.length;i++){rv=dvQRot(b.q,[b.sol.v[i][0]*b.r,b.sol.v[i][1]*b.r,b.sol.v[i][2]*b.r]);z=b.p[2]+rv[2];if(z<min){min=z;hit=rv;}}if(!hit)return;b.p[2]-=min;var rel=[b.v[0]+b.w[1]*hit[2]-b.w[2]*hit[1],b.v[1]+b.w[2]*hit[0]-b.w[0]*hit[2],b.v[2]+b.w[0]*hit[1]-b.w[1]*hit[0]];if(rel[2]>=0)return;var rn=dvCross(hit,[0,0,1]),j=-(1+DVE)*rel[2]/(1+b.ii*dvDot(rn,rn));b.v[2]+=j;var q=dvCross(hit,[0,0,j]);b.w=[b.w[0]+b.ii*q[0],b.w[1]+b.ii*q[1],b.w[2]+b.ii*q[2]];}
 function dvWalls(b){
   var pad=b.r*1.02,lo=dvH-dvRes-pad;
@@ -1553,86 +1680,190 @@ function dvWalls(b){
   if(b.p[1]>lo&&b.v[1]>0){b.p[1]=lo;b.v[1]=-b.v[1]*DVWALL;bump=true;}
   if(bump)b.w=[b.w[0]*0.6,b.w[1]*0.6,b.w[2]*0.6];
 }
-/* Dice knock each other about. Bounding spheres are close enough for the
-   shove, and the tangential part of the hit puts a spin on both. */
-function dvKnock(){
+function dvKnock(all){
   var i,j;
-  for(i=0;i<dvBits.length;i++)for(j=i+1;j<dvBits.length;j++){
-    var a=dvBits[i],b=dvBits[j];
+  for(i=0;i<all.length;i++)for(j=i+1;j<all.length;j++){
+    var a=all[i],b=all[j];
     var d=dvSub(b.p,a.p),dist=dvLen(d)||0.001,min=a.r+b.r;
     if(dist>=min)continue;
-    var n=[d[0]/dist,d[1]/dist,d[2]/dist],push=(min-dist)/2;
-    if(!a.rest){a.p=[a.p[0]-n[0]*push,a.p[1]-n[1]*push,Math.max(0,a.p[2]-n[2]*push)];}
-    if(!b.rest){b.p=[b.p[0]+n[0]*push,b.p[1]+n[1]*push,Math.max(0,b.p[2]+n[2]*push)];}
+    var n=[d[0]/dist,d[1]/dist,d[2]/dist],push=min-dist;
     var rel=dvSub(b.v,a.v),vn=dvDot(rel,n);
-    if(vn>=0)continue;
+    var wake=vn<-1.5;
+    if(wake){
+      if(a.rest){a.rest=false;a.calm=0;}
+      if(b.rest){b.rest=false;b.calm=0;}
+    }
+    var sa=a.rest&&!b.rest?0:(b.rest&&!a.rest?1:0.5);
+    a.p=[a.p[0]-n[0]*push*sa,a.p[1]-n[1]*push*sa,Math.max(0,a.p[2]-n[2]*push*sa)];
+    b.p=[b.p[0]+n[0]*push*(1-sa),b.p[1]+n[1]*push*(1-sa),Math.max(0,b.p[2]+n[2]*push*(1-sa))];
+    if(!wake)continue;
     var jn=-(1+DVBUMP)*vn/2;
-    if(!a.rest)a.v=[a.v[0]-n[0]*jn,a.v[1]-n[1]*jn,a.v[2]-n[2]*jn];
-    if(!b.rest)b.v=[b.v[0]+n[0]*jn,b.v[1]+n[1]*jn,b.v[2]+n[2]*jn];
+    a.v=[a.v[0]-n[0]*jn,a.v[1]-n[1]*jn,a.v[2]-n[2]*jn];
+    b.v=[b.v[0]+n[0]*jn,b.v[1]+n[1]*jn,b.v[2]+n[2]*jn];
     var vt=[rel[0]-n[0]*vn,rel[1]-n[1]*vn,rel[2]-n[2]*vn];
     var sp=dvCross(n,vt);
-    if(!a.rest)a.w=[a.w[0]-sp[0]*0.03,a.w[1]-sp[1]*0.03,a.w[2]-sp[2]*0.03];
-    if(!b.rest)b.w=[b.w[0]+sp[0]*0.03,b.w[1]+sp[1]*0.03,b.w[2]+sp[2]*0.03];
-    if(a.rest)a.calm=0;
-    if(b.rest)b.calm=0;
+    a.w=[a.w[0]-sp[0]*0.03,a.w[1]-sp[1]*0.03,a.w[2]-sp[2]*0.03];
+    b.w=[b.w[0]+sp[0]*0.03,b.w[1]+sp[1]*0.03,b.w[2]+sp[2]*0.03];
   }
 }
-function dvIntegrate(dt){dvAge+=dt;for(var i=0;i<dvBits.length;i++){var b=dvBits[i];if(b.rest)continue;b.v[2]-=DVG*dt;b.p=[b.p[0]+b.v[0]*dt,b.p[1]+b.v[1]*dt,b.p[2]+b.v[2]*dt];var w=dvLen(b.w);if(w>1e-5)b.q=dvQUnit(dvQMul(dvQAxis(b.w,w*dt),b.q));dvTable(b);dvWalls(b);if(b.p[2]<b.r*1.08){var rr=Math.exp(-3.8*dt),ra=Math.exp(-4.8*dt);b.v=[b.v[0]*rr,b.v[1]*rr,b.v[2]];b.w=[b.w[0]*ra,b.w[1]*ra,b.w[2]*ra];}var v=dvLen(b.v),a=dvLen(b.w);if(b.p[2]<b.r*1.03&&v<8&&a<.55)b.calm+=dt;else b.calm=0;if(b.calm>=.04||dvAge>5)dvSettle(b);}dvKnock();}
-function dvStep(t){var real=dvPrev?Math.min(.05,(t-dvPrev)/1000):1/60;dvPrev=t;if(dvPhase===2){dvFade-=real/DVFADE;dvPaint();if(dvFade>0)dvRaf=requestAnimationFrame(dvStep);else{dvCtx.clearRect(0,0,dvW,dvH);dvCan.classList.remove("on");dvBits=[];dvRaf=0;}return;}dvAcc+=real;for(var loops=0;dvAcc>=1/120&&loops++<8;){dvIntegrate(1/120);dvAcc-=1/120;}if(loops===8)dvAcc=0;dvPaint();if(dvBits.every(function(b){return b.rest;})){dvPhase=1;if(dvDone){dvDone(dvBits.map(function(b){return b.value;}));dvDone=null;}dvRaf=0;dvTimer=setTimeout(function(){dvPhase=2;dvPrev=0;dvRaf=requestAnimationFrame(dvStep);},DVREST*1000);}else dvRaf=requestAnimationFrame(dvStep);}
+
+function dvIntegrate(dt){
+  var all=[],ci,bi,cst,b;
+  for(ci=0;ci<dvCast.length;ci++){
+    cst=dvCast[ci];cst.age+=dt;
+    for(bi=0;bi<cst.bits.length;bi++){
+      b=cst.bits[bi];all.push(b);
+      if(b.rest)continue;
+      b.v[2]-=DVG*dt;
+      b.p=[b.p[0]+b.v[0]*dt,b.p[1]+b.v[1]*dt,b.p[2]+b.v[2]*dt];
+      var w=dvLen(b.w);
+      if(w>1e-5)b.q=dvQUnit(dvQMul(dvQAxis(b.w,w*dt),b.q));
+      dvTable(b);dvWalls(b);
+      if(b.p[2]<b.r*1.08){
+        var rr=Math.exp(-3.8*dt),ra=Math.exp(-4.8*dt);
+        b.v=[b.v[0]*rr,b.v[1]*rr,b.v[2]];
+        b.w=[b.w[0]*ra,b.w[1]*ra,b.w[2]*ra];
+      }
+      var v=dvLen(b.v),a=dvLen(b.w);
+      if(b.p[2]<b.r*1.03&&v<8&&a<.55)b.calm+=dt;else b.calm=0;
+      if(b.calm>=.04||cst.age>5)dvSettle(b);
+    }
+  }
+  dvKnock(all);
+}
+
+function dvStep(t){
+  var real=dvPrev?Math.min(.05,(t-dvPrev)/1000):1/60;
+  dvPrev=t;
+  dvAcc+=real;
+  for(var loops=0;dvAcc>=1/120&&loops++<8;){dvIntegrate(1/120);dvAcc-=1/120;}
+  if(loops===8)dvAcc=0;
+  var ci,c;
+  for(ci=dvCast.length-1;ci>=0;ci--){
+    c=dvCast[ci];
+    if(c.phase===0){
+      if(c.bits.every(function(b){return b.rest;})){
+        c.phase=1;c.hold=0;dvLastLand=Date.now();
+        if(c.done){c.done(c.bits.map(function(b){return b.value;}));c.done=null;}
+      }
+    }else if(c.phase===1){
+      c.hold+=real;
+      if(c.hold>=DVREST)c.phase=2;
+    }else{
+      c.fade-=real/DVFADE;
+      if(c.fade<=0)dvCast.splice(ci,1);
+    }
+  }
+  dvPaint();
+  if(dvCast.length)dvRaf=requestAnimationFrame(dvStep);
+  else{
+    dvCtx.clearRect(0,0,dvW,dvH);
+    dvCan.classList.remove("on");
+    dvRaf=0;dvPrev=0;
+  }
+}
+
 function dvPaint(){
   var c=dvCtx,pal=dvPal;
   if(!c||!pal)return;
   c.clearRect(0,0,dvW,dvH);
-  c.globalAlpha=dvFade;
   c.lineJoin="round";
-  c.textAlign="center";c.textBaseline="middle";
-  var order=dvBits.slice().sort(function(a,b){
+  c.textAlign="center";
+  var draw=[],ci,bi;
+  for(ci=0;ci<dvCast.length;ci++)
+    for(bi=0;bi<dvCast[ci].bits.length;bi++)draw.push(dvCast[ci].bits[bi]);
+  draw.sort(function(a,b){
     return (a.p[1]-a.p[2]*DVLIFT)-(b.p[1]-b.p[2]*DVLIFT);
   });
-  order.forEach(function(b){
+  c.textBaseline="middle";
+  draw.forEach(function(b){
+    var cst=b.cast,col=cst.col,fade=cst.fade;
     var near=1/(1+b.p[2]*0.011);
-    c.globalAlpha=0.34*near*dvFade;
+    c.globalAlpha=0.34*near*fade;
     c.fillStyle="#000";
     c.beginPath();
     c.ellipse(b.p[0],b.p[1],b.r*0.95*near,b.r*0.5*near,0,0,6.2832);
     c.fill();
-    c.globalAlpha=dvFade;
+    c.globalAlpha=fade;
     var pts=b.sol.v.map(function(v){
-      var r=dvQRot(b.q,[v[0]*b.r,v[1]*b.r,v[2]*b.r]);
-      return [b.p[0]+r[0],b.p[1]+r[1]-(b.p[2]+r[2])*DVLIFT];
+      var q=dvQRot(b.q,[v[0]*b.r,v[1]*b.r,v[2]*b.r]);
+      return [b.p[0]+q[0],b.p[1]+q[1]-(b.p[2]+q[2])*DVLIFT];
     });
+    /* Faces are filled first and outlined afterwards. A stroke straddles its
+       path, so drawing it with its own face left half of it to be buried by
+       whichever neighbour happened to be painted next — which is why a resting
+       d4 could come out with only two of its three edges lit. */
+    var faces=[];
     b.sol.f.forEach(function(f,fi){
       var n=dvQRot(b.q,f.n),vis=dvDot(n,DVCAM);
       if(vis<=0.015)return;
+      var top=b.rest&&fi===b.up;
+      var lit=0.40+0.60*Math.max(0,dvDot(n,DVLIGHT));
+      faces.push({f:f,fi:fi,vis:vis,top:top,
+                  fill:dvMix(col,(0.42+lit*0.72)*(top?1.28:1))});
+    });
+    var path=function(f){
       c.beginPath();
       f.i.forEach(function(k,ix){
         ix?c.lineTo(pts[k][0],pts[k][1]):c.moveTo(pts[k][0],pts[k][1]);
       });
       c.closePath();
-      /* the result has to be unmistakable, so the resting face lights up and
-         the other numbers drop back — you read a die off the top */
-      var top=b.rest&&fi===b.up;
-      var lit=0.40+0.60*Math.max(0,dvDot(n,DVLIGHT));
-      c.fillStyle=dvShade(pal.body,(0.55+lit*1.35)*(top?1.6:1));
+    };
+    faces.forEach(function(o){
+      path(o.f);
+      c.fillStyle=dvRGB(o.fill);
       c.fill();
-      c.strokeStyle=top?(b.hi?pal.hi:b.lo?pal.lo:dvShade(pal.edge,1.3))
-                       :dvShade(pal.edge,0.34+lit*0.5);
-      c.lineWidth=top?2:1.15;
-      c.stroke();
-      if(!top&&vis<0.52)return;
-      var cr=dvQRot(b.q,[f.c[0]*b.r*1.03,f.c[1]*b.r*1.03,f.c[2]*b.r*1.03]);
-      c.fillStyle=top?(b.hi?pal.hi:b.lo?pal.lo:pal.ink):pal.ink;
-      c.globalAlpha=dvFade*(top?1:(b.rest?0.26:1)*Math.min(1,(vis-0.52)*5.5));
-      c.font="700 "+Math.round(b.r*(top?0.60:0.30+0.28*vis))+"px "+pal.font;
-      c.fillText(b.lab[fi],b.p[0]+cr[0],b.p[1]+cr[1]-(b.p[2]+cr[2])*DVLIFT);
-      c.globalAlpha=dvFade;
     });
-    if(b.rest){var tf=b.sol.f[b.up];c.beginPath();tf.i.forEach(function(k,x){x?c.lineTo(pts[k][0],pts[k][1]):c.moveTo(pts[k][0],pts[k][1]);});c.closePath();c.strokeStyle=b.hi?pal.hi:b.lo?pal.lo:dvShade(pal.edge,1.3);c.lineWidth=2.35;c.stroke();}
+    faces.forEach(function(o){
+      if(o.top)return;
+      path(o.f);
+      c.strokeStyle=dvRGB(dvMix(col,dvLum(o.fill)>0.5?0.45:1.8));
+      c.lineWidth=1.15;
+      c.stroke();
+    });
+    faces.forEach(function(o){
+      if(!o.top)return;
+      path(o.f);
+      c.strokeStyle=b.hi?pal.hi:b.lo?pal.lo
+                   :dvRGB(dvMix(col,dvLum(o.fill)>0.5?0.3:2.2));
+      c.lineWidth=2.35;
+      c.stroke();
+    });
+    faces.forEach(function(o){
+      if(!o.top&&o.vis<0.52)return;
+      var f=o.f;
+      var cr=dvQRot(b.q,[f.c[0]*b.r*1.03,f.c[1]*b.r*1.03,f.c[2]*b.r*1.03]);
+      c.fillStyle=o.top?(b.hi?dvTint(o.fill,pal.hi):b.lo?dvTint(o.fill,pal.lo):dvInk(o.fill))
+                       :dvInk(o.fill);
+      c.globalAlpha=fade*(o.top?1:(b.rest?0.3:1)*Math.min(1,(o.vis-0.52)*5.5));
+      c.font="700 "+Math.round(b.r*(o.top?0.60:0.30+0.28*o.vis))+"px "+pal.font;
+      c.fillText(b.lab[o.fi],b.p[0]+cr[0],b.p[1]+cr[1]-(b.p[2]+cr[2])*DVLIFT);
+      c.globalAlpha=fade;
+    });
+  });
+  /* Names go on once a die has stopped, not while it is still tumbling, and
+     one per die rather than one per throw — so a die knocked halfway across the
+     map by somebody else's throw carries its owner's name along with it.
+     Outlined, because they land on whatever terrain they land on. */
+  c.textBaseline="top";
+  c.font="600 10px "+pal.font;
+  c.lineJoin="round";
+  c.lineWidth=3;
+  dvCast.forEach(function(cst){
+    if(!cst.who)return;
+    c.globalAlpha=cst.fade;
+    c.strokeStyle="rgba(3,10,8,.9)";
+    var tint=dvRGB(dvMix(cst.col,1.05));
+    cst.bits.forEach(function(b){
+      if(!b.rest)return;
+      var x=b.p[0],y=Math.min(dvH-dvRes-12,b.p[1]+b.r*0.62);
+      c.strokeText(cst.who,x,y);
+      c.fillStyle=tint;
+      c.fillText(cst.who,x,y);
+    });
   });
   c.globalAlpha=1;
 }
-/* With the map throw switched off the dice tumble in the strip instead, one
-   settling after the next, the total adding up whatever is showing. */
 function dAnimate(rec,done){
   var host=document.querySelector("#dTicker .dent");
   var quiet=false;
@@ -1674,12 +1905,44 @@ function dCommit(rec){
   dLog.push(rec);
   if(dLog.length>DKEEP)dLog=dLog.slice(-DKEEP);
 }
+/* The newest entry goes in at the left, so it opens out from nothing and
+   walks the rest of the strip along in front of it. */
+function dSlide(){
+  var e=document.querySelector("#dTicker .dent");
+  if(!e)return;
+  e.classList.add("landed");
+  setTimeout(function(){e.classList.remove("landed");},520);
+  var quiet=false;
+  try{quiet=matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(x){}
+  if(quiet||!e.animate)return;
+  var w=e.scrollWidth;
+  e.style.overflow="hidden";
+  try{
+    var run=e.animate([{maxWidth:"0px",marginRight:"-17px",opacity:0,transform:"translateX(-16px)"},
+                       {maxWidth:w+"px",marginRight:"0px",opacity:1,transform:"none"}],
+                      {duration:440,easing:"cubic-bezier(.2,.85,.3,1)"});
+    run.onfinish=function(){e.style.overflow="";};
+  }catch(x){e.style.overflow="";}
+}
 function dFinalize(r,f){r.f=f;r.t=r.m;f.forEach(function(v){r.t+=v;});r.crit=f.indexOf(r.s)>=0;r.fumble=r.n===1&&f[0]===1;return r;}
-function dThrow(){if(dRolling)return;var g=function(i){return document.getElementById(i);},n=+g("dCount").value||1,s=+g("dSides").value||20,m=+g("dMod").value||0,r={who:(g("dName").value||"").trim().slice(0,16),n:n,s:s,m:m,ts:Date.now(),cid:DCID};dRolling=true;g("dRoll").disabled=true;var done=function(){dRolling=false;g("dRoll").disabled=false;if(dPending){dLog=dPending;dPending=null;dTickerRender();}dLogRender();dModeRender();},post=function(f){dFinalize(r,f);dCommit(r);dSave();dTickerRender();var e=document.querySelector("#dTicker .dent");if(e){e.classList.add("landed");setTimeout(function(){e.classList.remove("landed");},480);}if(dSyncPush)dSyncPush(r);done();};if(dvOn())dvThrow(r,post);else{var f=[],i;for(i=0;i<n;i++)f.push(dRand(s));dFinalize(r,f);dCommit(r);dSave();dTickerRender();dAnimate(r,function(){if(dSyncPush)dSyncPush(r);done();});}try{localStorage.setItem("vesper:dice",JSON.stringify({n:n,s:s,m:m,who:r.who}));}catch(e){}}
+/* A colour picked here rides along with the roll so everyone else's board
+   paints it the same. Left alone it is one of the pastels, chosen once and
+   then kept, so a player is the same colour every session. */
+function dColour(){
+  var v="";
+  try{v=localStorage.getItem("vesper:dicecol")||"";}catch(e){}
+  if(!/^#[0-9a-fA-F]{6}$/.test(v)){
+    v=DVPASTEL[Math.floor(Math.random()*DVPASTEL.length)];
+    try{localStorage.setItem("vesper:dicecol",v);}catch(e){}
+  }
+  return v;
+}
+function dThrow(){if(dRolling)return;var g=function(i){return document.getElementById(i);},n=+g("dCount").value||1,s=+g("dSides").value||20,m=+g("dMod").value||0,r={who:(g("dName").value||"").trim().slice(0,16),n:n,s:s,m:m,ts:Date.now(),cid:DCID,c:dColour()};dRolling=true;g("dRoll").disabled=true;var done=function(){dRolling=false;g("dRoll").disabled=false;if(dPending){dLog=dPending;dPending=null;dTickerRender();}dLogRender();dModeRender();},post=function(f){done();setTimeout(function(){dFinalize(r,f);dCommit(r);dSave();dTickerRender();dSlide();if(dSyncPush)dSyncPush(r);dLogRender();},DTALLY);};if(dvOn())dvThrow(r,post);else{var f=[],i;for(i=0;i<n;i++)f.push(dRand(s));dFinalize(r,f);dCommit(r);dSave();dTickerRender();dAnimate(r,function(){if(dSyncPush)dSyncPush(r);done();});}try{localStorage.setItem("vesper:dice",JSON.stringify({n:n,s:s,m:m,who:r.who}));}catch(e){}}
 function diceLocale(){
   var g=function(id){return document.getElementById(id);},e;
   if(e=g("dName"))e.placeholder=T("yourName");
   if(e=g("dRoll"))e.textContent=T("roll");
+  dGateRender();
   if(e=g("dShow"))e.textContent=T("dice");
   if(e=g("dMin"))e.title=T("hideDice");
   if(e=g("dExp"))e.title=T("rollLog");
@@ -1687,6 +1950,58 @@ function diceLocale(){
 }
 /* Optional shared strip. Nothing loads unless a sync URL is actually set,
    so the standalone file stays standalone. */
+/* Signing in.
+
+   A password checked inside this file would not be a lock: the file is public,
+   anyone can read the check and skip it, or talk to the database directly. So
+   the password is checked by Firebase, not here. Turn on Email/Password in the
+   Firebase console, make ONE account for the table, and set the rules to
+   require auth. Then a wrong password gets no token, and no token gets no data.
+
+   Wire it up with the api key on the link:
+     index.html?dice=https://xxx.firebasedatabase.app&dkey=AIza...&duser=table@your.game
+   or as an object in map.json under "diceSync". */
+var dGateCfg=null,dSignedIn=false,dGateBusy=false,dSyncUrl="";
+function dGateRender(){
+  var g=function(i){return document.getElementById(i);};
+  var btn=g("dRoll"),gate=g("dGate");
+  if(!btn||!gate)return;
+  var locked=!!dGateCfg&&!dSignedIn;
+  btn.classList.toggle("locked",locked);
+  btn.textContent=locked?T("signInToRoll"):T("roll");
+  if(!locked)gate.classList.add("hidden");
+}
+function dGateOpen(){
+  var g=document.getElementById("dGate");
+  if(!g)return;
+  g.classList.remove("hidden");
+  var f=document.getElementById("dPass");
+  if(f)f.focus();
+}
+function dGateTry(){
+  var pass=document.getElementById("dPass"),msg=document.getElementById("dGateMsg");
+  if(!dGateCfg||dGateBusy||!pass)return;
+  var pw=pass.value;
+  if(!pw){msg.textContent=T("needPass");return;}
+  dGateBusy=true;msg.textContent=T("signingIn");
+  var base="https://www.gstatic.com/firebasejs/10.12.5/";
+  Promise.all([import(base+"firebase-app.js"),import(base+"firebase-auth.js")])
+    .then(function(m){
+      var app=m[0].getApps&&m[0].getApps().length?m[0].getApps()[0]
+             :m[0].initializeApp({apiKey:dGateCfg.key,databaseURL:dGateCfg.url,
+                                  authDomain:dGateCfg.domain});
+      return m[1].signInWithEmailAndPassword(m[1].getAuth(app),dGateCfg.user,pw);
+    })
+    .then(function(){
+      dGateBusy=false;pass.value="";msg.textContent="";
+      dSignedIn=true;dGateRender();dSyncConnect();
+    })["catch"](function(err){
+      dGateBusy=false;
+      msg.textContent=(String(err&&err.code||"").indexOf("wrong-password")>=0||
+                       String(err&&err.code||"").indexOf("invalid-credential")>=0)
+        ?T("wrongPass"):T("signInFailed");
+    });
+}
 function dSyncInit(){
   var url="";
   try{url=new URLSearchParams(location.search).get("dice")||"";}catch(e){}
@@ -1694,30 +2009,81 @@ function dSyncInit(){
     if(url)localStorage.setItem("vesper:dicesync",url);
     else url=localStorage.getItem("vesper:dicesync")||"";
   }catch(e){}
-  url=(url||DATA.diceSync||"").replace(/\/+$/,"");
+  var cfgObj=DATA.diceSync;
+  url=(url||(cfgObj&&typeof cfgObj==="object"?cfgObj.databaseURL:cfgObj)||
+       DICECFG.databaseURL||"").replace(/\/+$/,"");
   if(!url||!/^https:\/\//.test(url))return;
+  dSyncUrl=url;
   var room=String(DATA.title||"table").toLowerCase()
     .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"table";
+  var key="",user="",domain="";
+  try{
+    var qs=new URLSearchParams(location.search);
+    key=qs.get("dkey")||"";user=qs.get("duser")||"";
+  }catch(e){}
+  var cfg=DATA.diceSync;
+  if(cfg&&typeof cfg==="object"){
+    key=key||cfg.apiKey||"";user=user||cfg.user||"";domain=cfg.authDomain||"";
+  }
+  key=key||DICECFG.apiKey||"";user=user||DICECFG.user||"";
+  if(!domain){
+    /* dice-tracker-bd919-default-rtdb.europe-west1... -> dice-tracker-bd919 */
+    var host=url.replace(/^https:\/\//,"").split("/")[0];
+    var proj=host.split(".")[0].replace(/-default-rtdb$/,"");
+    if(proj)domain=proj+".firebaseapp.com";
+  }
+  if(key){
+    /* Firebase does the checking, so nothing here has to be kept secret. */
+    dGateCfg={url:url,key:key,user:user||"table@vesper.local",
+              domain:domain||undefined};
+    dSyncRoom=room;
+    dGateRender();
+    dSyncWatch();
+    return;
+  }
+  dSyncRoom=room;dSyncConnect();
+}
+var dSyncRoom="";
+/* If the browser still holds a token from last time, come straight in. */
+function dSyncWatch(){
+  var base="https://www.gstatic.com/firebasejs/10.12.5/";
+  Promise.all([import(base+"firebase-app.js"),import(base+"firebase-auth.js")])
+    .then(function(m){
+      var app=m[0].getApps&&m[0].getApps().length?m[0].getApps()[0]
+             :m[0].initializeApp({apiKey:dGateCfg.key,databaseURL:dGateCfg.url,
+                                  authDomain:dGateCfg.domain});
+      m[1].onAuthStateChanged(m[1].getAuth(app),function(u){
+        if(u&&!dSignedIn){dSignedIn=true;dGateRender();dSyncConnect();}
+      });
+    })["catch"](function(){});
+}
+function dSyncConnect(){
+  var url=dGateCfg?dGateCfg.url:dSyncUrl,room=dSyncRoom;
   var base="https://www.gstatic.com/firebasejs/10.12.5/";
   Promise.all([import(base+"firebase-app.js"),import(base+"firebase-database.js")])
     .then(function(mods){
-      var db=mods[1].getDatabase(mods[0].initializeApp({databaseURL:url}));
+      var app=mods[0].getApps&&mods[0].getApps().length?mods[0].getApps()[0]
+             :mods[0].initializeApp(dGateCfg
+                ?{apiKey:dGateCfg.key,databaseURL:url,authDomain:dGateCfg.domain}
+                :{databaseURL:url});
+      var db=mods[1].getDatabase(app);
       var list=mods[1].ref(db,"vesper/"+room+"/rolls");
       var first=true;
       mods[1].onValue(mods[1].query(list,mods[1].limitToLast(DKEEP)),function(sn){
-        var out=[],fresh=null;
+        var out=[],arriving=[];
         sn.forEach(function(c){
           var v=c.val()||{};v.id=c.key;out.push(v);
           if(dvSeen[c.key])return;
           dvSeen[c.key]=1;
-          /* anything arriving after the first load is somebody else throwing,
-             so their dice roll across this map too */
-          if(!first&&v.cid!==DCID&&v.f&&v.f.length)fresh=v;
+          if(!first&&v.cid!==DCID&&v.f&&v.f.length)arriving.push(v);
         });
         first=false;
+        /* Straight onto the table, whatever else is already in the air. At a
+           group check everybody rolls at once, and holding one back would be a
+           lie about what happened. */
+        arriving.forEach(function(v){dvThrow(v,null);});
         if(dRolling){dPending=out;return;}
         dLog=out;dTickerRender();dLogRender();
-        if(fresh)dvThrow(fresh,null);
       });
       dSyncPush=function(rec){
         try{rec?mods[1].push(list,rec):mods[1].remove(list);}catch(e){}
@@ -1747,9 +2113,22 @@ function diceInit(){
   }catch(e){}
   cnt.value=pref.n||1;sid.value=pref.s||20;
   mod.value=(pref.m===undefined?0:pref.m);nm.value=pref.who||"";
-  btn.onclick=dThrow;
+  btn.onclick=function(){
+    if(dGateCfg&&!dSignedIn){dGateOpen();return;}
+    dThrow();
+  };
+  var pg=g("dPassGo"),pf=g("dPass");
+  if(pg)pg.onclick=dGateTry;
+  if(pf)pf.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();dGateTry();}};
   g("dMode").onclick=function(){if(dRolling)return;try{localStorage.setItem("vesper:diceboard",dvWant()?"0":"1");}catch(e){}dModeRender();};
   nm.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();dThrow();}};
+  var sw=g("dCol");
+  if(sw){
+    sw.value=dColour();
+    sw.oninput=function(){
+      try{localStorage.setItem("vesper:dicecol",sw.value);}catch(e){}
+    };
+  }
   g("dExp").onclick=function(){
     var box=g("dLog"),open=box.classList.toggle("hidden")===false;
     this.setAttribute("aria-expanded",open);
@@ -1767,8 +2146,7 @@ function diceInit(){
   dvCan=g("dvCan");
   if(dvCan&&dvCan.getContext){dvCtx=dvCan.getContext("2d");dvSize();}
   else dvCan=null;
-  window.addEventListener("resize",function(){if(dvBits.length)dvSize();});
-  window.addEventListener("beforeunload",function(){clearTimeout(dvTimer);});
+  window.addEventListener("resize",function(){if(dvCast.length)dvSize();});
   diceLocale();dModeRender();dTickerRender();dLogRender();dSyncInit();
 }
 /* The panel docks to the bottom on a phone, so the dice have to sit above it. */
