@@ -172,7 +172,7 @@ h1{display:flex;align-items:baseline}
 .dent.rolling .dtot{color:var(--dim)}
 .dent.landed .dtot{animation:dpop .42s ease-out}
 @keyframes dpop{0%{transform:scale(1.55);color:var(--accent-hi)}100%{transform:none}}
-.dtray{flex:none;width:198px;background:var(--float);border:1px solid var(--line);
+.dtray{flex:none;width:216px;background:var(--float);border:1px solid var(--line);
   padding:7px 8px 8px;display:flex;flex-direction:column;gap:6px}
 .dtop{display:flex;gap:6px;align-items:center}
 #dName{flex:1;min-width:0;background:var(--void);border:1px solid var(--line);
@@ -187,7 +187,9 @@ h1{display:flex;align-items:baseline}
   color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:13px;line-height:1;padding:0}
 .dmin:hover{color:var(--bright);border-color:var(--dim)}
 .dsel{display:flex;align-items:center;gap:4px}
+.hyear{color:var(--accent);letter-spacing:.16em}
 .dfield{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dfield:last-child{flex:1.45}
 .dfield>span{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dfield select{flex:none;width:100%}
@@ -279,6 +281,7 @@ h1{display:flex;align-items:baseline}
 </style>
 <header>
   <h1><span class="wm">Vesper</span><span class="wdiv">·</span><span id="hTitle"></span></h1>
+  <span class="sub hyear" id="hYear"></span>
   <span class="sub" id="hMode"></span>
   <span class="spacer"></span>
   <span class="sub muted" id="hStamp"></span>
@@ -401,7 +404,7 @@ var STR={
   passFor:"Heslo pro",badLogin:"Špatné heslo, nebo takový účet neexistuje.",
   noProvider:"Ve Firebase není zapnuté přihlášení e-mailem a heslem.",
   badKey:"Firebase ten api klíč nepřijalo.",tooMany:"Příliš mnoho pokusů, chvíli počkej.",
-  amount:"Počet",modifier:"Modif."},
+  amount:"Počet",modifier:"Modifikátor",year:"Rok"},
  en:{regionMap:"Region map",region:"Region",closeup:"Close-up",route:"Route",
   clearRoute:"Clear route",briefings:"Briefings",wiki:"Wiki",thisHex:"This hex",key:"Key",
   clickHex:"Click a hex on the map",viewCloseup:"View close-up",backToRegion:"Back to region",
@@ -434,7 +437,7 @@ var STR={
   passFor:"Password for",badLogin:"Wrong password, or no such account.",
   noProvider:"Email/Password sign-in is not switched on in Firebase.",
   badKey:"Firebase did not accept that api key.",tooMany:"Too many tries, wait a minute.",
-  amount:"Amount",modifier:"Modifier"}
+  amount:"Amount",modifier:"Modifier",year:"Year"}
 };
 var LOC="cs";
 try{var _l=localStorage.getItem("vesper:loc");if(_l&&STR[_l])LOC=_l;}catch(e){}
@@ -1144,6 +1147,7 @@ function applyPlayerTheme(name){
     b.setAttribute("aria-pressed",b.dataset.t===name);
   });
   try{localStorage.setItem("vesper:theme",name);}catch(e){}
+  if(typeof dSwatchSync==="function")dSwatchSync();
 }
 function applyLocale(l){
   if(!STR[l])return;
@@ -1167,6 +1171,7 @@ function applyLocale(l){
   if(pm&&!sel)pm.textContent=T("clickHex");
   set("hMode",(detailHex&&sel)?T("closeup")+" · "+coordOf(sel.col,sel.row):"");
   document.getElementById("hTitle").textContent=DATA.title||T("regionMap");
+  set("hYear",MAPYEAR?T("year")+" "+MAPYEAR:"");
   document.title="Vesper · "+(DATA.title||T("regionMap"));
   Array.prototype.forEach.call(document.querySelectorAll("#pLoc button"),function(b){
     b.setAttribute("aria-pressed",b.dataset.l===l);
@@ -1333,9 +1338,10 @@ function legend(){
    is how it behaved before.                                            */
 var DICECFG={
   databaseURL:"https://dice-tracker-bd919-default-rtdb.europe-west1.firebasedatabase.app",
-  apiKey:"",                    /* <-- paste yours here to switch the password on */
+  apiKey:"AIzaSyC-enYp_64Srby729Ju-EefDRrW56sF-CI",
   user:"table@vesper.game"      /* the one account to create in Firebase Auth */
 };
+var MAPYEAR="2376";                                /* shown beside the title; blank it to hide */
 var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
 var DCID=Math.random().toString(36).slice(2,10);
 var dLog=[],dRolling=false,dReady=false,dPending=null,dSyncPush=null;
@@ -1997,16 +2003,29 @@ function dSlide(){
 }
 function dFinalize(r,f){r.f=f;r.t=r.m;f.forEach(function(v){r.t+=v;});r.crit=f.indexOf(r.s)>=0;r.fumble=r.n===1&&f[0]===1;return r;}
 /* A colour picked here rides along with the roll so everyone else's board
-   paints it the same. Left alone it is one of the pastels, chosen once and
-   then kept, so a player is the same colour every session. */
-function dColour(){
-  var v="";
-  try{v=localStorage.getItem("vesper:dicecol")||"";}catch(e){}
-  if(!/^#[0-9a-fA-F]{6}$/.test(v)){
-    v=DVPASTEL[Math.floor(Math.random()*DVPASTEL.length)];
-    try{localStorage.setItem("vesper:dicecol",v);}catch(e){}
-  }
-  return v;
+   paints it the same. Left alone, the dice take a pastel of the theme's own
+   accent — so they match the map, and they follow it if the theme changes.
+   Nothing is stored until somebody actually chooses. */
+function dvHexOf(c){
+  var h=function(v){v=Math.max(0,Math.min(255,Math.round(v))).toString(16);
+    return v.length<2?"0"+v:v;};
+  return "#"+h(c[0])+h(c[1])+h(c[2]);
+}
+function dThemeDice(){
+  var cs=getComputedStyle(document.body);
+  var a=dvHex((cs.getPropertyValue("--accent")||"").trim()||"#4fbf8f");
+  return dvHexOf([a[0]+(255-a[0])*0.52,a[1]+(255-a[1])*0.52,a[2]+(255-a[2])*0.52]);
+}
+function dOwnColour(){
+  try{
+    var v=localStorage.getItem("vesper:dicecol")||"";
+    return /^#[0-9a-fA-F]{6}$/.test(v)?v:"";
+  }catch(e){return "";}
+}
+function dColour(){return dOwnColour()||dThemeDice();}
+function dSwatchSync(){
+  var sw=document.getElementById("dCol");
+  if(sw&&!dOwnColour())sw.value=dThemeDice();
 }
 function dThrow(){if(dRolling)return;var g=function(i){return document.getElementById(i);},n=+g("dCount").value||1,s=+g("dSides").value||20,m=+g("dMod").value||0,r={who:(g("dName").value||"").trim().slice(0,16),n:n,s:s,m:m,ts:Date.now(),cid:DCID,c:dColour()};dRolling=true;g("dRoll").disabled=true;var done=function(){dRolling=false;g("dRoll").disabled=false;if(dPending){dLog=dPending;dPending=null;dTickerRender();}dLogRender();dModeRender();},post=function(f){done();setTimeout(function(){dFinalize(r,f);dCommit(r);dSave();dTickerRender();dSlide();if(dSyncPush)dSyncPush(r);dLogRender();},DTALLY);};if(dvOn())dvThrow(r,post);else{var f=[],i;for(i=0;i<n;i++)f.push(dRand(s));dFinalize(r,f);dCommit(r);dSave();dTickerRender();dAnimate(r,function(){if(dSyncPush)dSyncPush(r);done();});}try{localStorage.setItem("vesper:dice",JSON.stringify({n:n,s:s,m:m,who:r.who}));}catch(e){}}
 function diceLocale(){
@@ -2016,6 +2035,9 @@ function diceLocale(){
   if(e=g("dLbA"))e.textContent=T("amount");
   if(e=g("dLbD"))e.textContent=T("dice");
   if(e=g("dLbM"))e.textContent=T("modifier");
+  var caps=function(){dFitCap(g("dLbA"));dFitCap(g("dLbD"));dFitCap(g("dLbM"));};
+  caps();
+  if(window.requestAnimationFrame)requestAnimationFrame(caps);
   dGateRender();
   if(e=g("dShow"))e.textContent=T("dice");
   if(e=g("dMin"))e.title=T("hideDice");
@@ -2182,6 +2204,33 @@ function dSyncConnect(){
       };
       dLog=[];dTickerRender();
     })["catch"](function(){});
+}
+/* Modifikátor is half again as long as Modifier, and the column is the width
+   it is. Rather than pick a size that suits one language and clips the other,
+   the caption steps down until it fits. */
+function dFitCap(e){
+  if(!e)return;
+  e.style.fontSize="";e.style.letterSpacing="";
+  var px=8.5;
+  /* scrollWidth stops growing once the ellipsis kicks in, so the real width is
+     taken from a free-standing copy of the text instead */
+  var probe=document.createElement("span");
+  probe.style.cssText="position:absolute;visibility:hidden;white-space:nowrap;left:-9999px";
+  document.body.appendChild(probe);
+  var room=e.clientWidth;
+  var fits=function(){
+    var cs=getComputedStyle(e);
+    probe.style.font=cs.font;probe.style.letterSpacing=cs.letterSpacing;
+    probe.style.textTransform=cs.textTransform;
+    probe.textContent=e.textContent;
+    return probe.getBoundingClientRect().width<=room+0.5;
+  };
+  while(!fits()&&px>5.5){
+    px-=0.5;
+    e.style.fontSize=px+"px";
+    if(px<7.5)e.style.letterSpacing="0";
+  }
+  probe.parentNode.removeChild(probe);
 }
 function dModeRender(){var b=document.getElementById("dMode");if(!b)return;var on=dvWant();b.textContent=on?"3D: ON":"3D: OFF";b.title=on?"3D throw enabled — click for instant result":"Instant result enabled — click for 3D throw";b.setAttribute("aria-pressed",on?"true":"false");}
 function diceInit(){
