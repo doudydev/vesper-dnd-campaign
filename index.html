@@ -221,7 +221,9 @@ h1{display:flex;align-items:baseline}
 .dlog{background:var(--panel);border:1px solid var(--line);max-height:238px;overflow-y:auto}
 .dlog .drow{display:flex;align-items:center;gap:9px;padding:5px 11px;font-size:11.5px}
 .dlog .drow+.drow{border-top:1px solid var(--line2)}
-.dlog .dtime{font-style:normal;color:var(--dim);font-size:9.5px;flex:none;width:44px}
+.dlog .dtime{font-style:normal;color:var(--dim);font-size:9.5px;flex:none;width:64px;
+  display:flex;flex-direction:column;line-height:1.25}
+.dlog .dtime b{font-weight:400;font-size:8.5px;opacity:.72}
 .dlog .dwho{flex:1;min-width:0;max-width:none}
 .dlog .dfl{font-style:normal;color:var(--dim);font-size:10px;flex:none}
 .dlog .dtot{font-size:14px;min-width:3ch;text-align:right}
@@ -1344,13 +1346,30 @@ var DICECFG={
 var MAPYEAR="2376";                                /* shown beside the title; blank it to hide */
 var DSIDES=[4,6,8,10,12,20,100],DKEEP=40;
 var DCID=Math.random().toString(36).slice(2,10);
-var dLog=[],dRolling=false,dReady=false,dPending=null,dSyncPush=null;
+var dLog=[],dRolling=false,dReady=false,dPending=null,dSyncPush=null,dShown=-1;
 function dRand(max){
   try{
     var lim=Math.floor(4294967296/max)*max,b=new Uint32Array(1),n;
     do{crypto.getRandomValues(b);n=b[0];}while(n>=lim);
     return (n%max)+1;
   }catch(e){return Math.floor(Math.random()*max)+1;}
+}
+var DSTRIP=12*3600*1000;                           /* strip clears after this much quiet */
+/* The strip is what is happening now; the log is the record. More than twelve
+   hours between two rolls means a different sitting, so the strip walks back
+   from the newest until it finds that gap and shows nothing older. Leave it a
+   day and it opens empty instead of on last night's dice. */
+function dSession(){
+  var n=dLog.length,i;
+  if(!n||Date.now()-(dLog[n-1].ts||0)>DSTRIP)return [];
+  for(i=n-1;i>0;i--)if((dLog[i].ts||0)-(dLog[i-1].ts||0)>DSTRIP)break;
+  return dLog.slice(i);
+}
+function dDate(ts){
+  var d=new Date(ts||0);
+  if(isNaN(d.getTime()))return "";
+  var p=function(v){return v<10?"0"+v:""+v;};
+  return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear();
 }
 function dNota(r){return r.n+"d"+r.s+(r.m>0?"+"+r.m:r.m<0?String(r.m):"");}
 function dTime(ts){
@@ -1371,8 +1390,10 @@ function dTickerRender(){
   var strip=document.getElementById("dTicker");
   if(!strip)return;
   strip.textContent="";
-  if(!dLog.length){strip.appendChild(dEl("span","dnone",T("noRolls")));return;}
-  dLog.slice(-14).reverse().forEach(function(r,i){
+  var show=dSession();
+  dShown=show.length;
+  if(!show.length){strip.appendChild(dEl("span","dnone",T("noRolls")));return;}
+  show.slice(-14).reverse().forEach(function(r,i){
     var e=dEl("span","dent"+(r.crit?" crit":"")+(r.fumble?" fumble":""));
     e.appendChild(dEl("i","dwho",r.who||T("player")));
     if(i===0){
@@ -1393,7 +1414,10 @@ function dLogRender(){
   if(!dLog.length)box.appendChild(dEl("div","drow dnone",T("noRolls")));
   else dLog.slice().reverse().forEach(function(r){
     var row=dEl("div","drow"+(r.crit?" crit":"")+(r.fumble?" fumble":""));
-    row.appendChild(dEl("i","dtime",dTime(r.ts)));
+    var when=dEl("i","dtime");
+    when.appendChild(dEl("b",null,dDate(r.ts)));
+    when.appendChild(dEl("span",null,dTime(r.ts)));
+    row.appendChild(when);
     row.appendChild(dEl("i","dwho",r.who||T("player")));
     row.appendChild(dEl("i","dfl",(r.f||[]).join(" ")));
     row.appendChild(dEl("b","dtot",r.t));
@@ -2290,6 +2314,9 @@ function diceInit(){
   if(dvCan&&dvCan.getContext){dvCtx=dvCan.getContext("2d");dvSize();}
   else dvCan=null;
   window.addEventListener("resize",function(){if(dvCast.length)dvSize();});
+  /* nothing may happen for hours, so the strip checks itself rather than
+     waiting for the next roll to notice the session ended */
+  setInterval(function(){if(dReady&&dSession().length!==dShown)dTickerRender();},60000);
   diceLocale();dModeRender();dTickerRender();dLogRender();dSyncInit();
 }
 /* The panel docks to the bottom on a phone, so the dice have to sit above it. */
