@@ -1833,14 +1833,15 @@ function rdFrame(ts){
 /* ---- the broadcast radio --------------------------------------------------
    The GM puts this on every screen at once from the GM tab. It tunes in through
    static, stays on air while the GM reads the bulletin aloud, and tunes out when
-   the GM takes it off. The hiss is a two-second noise loop made here and played
-   from an ordinary audio element, like the field radio's tapes. */
+   the GM takes it off. The hiss is a noise loop made here, twenty seconds so the
+   ear never catches it repeating, played from an ordinary audio element, like
+   the field radio's tapes. */
 var BC=null,BCURL="",BCMUTE=false,BCF=104.7;
 try{BCMUTE=localStorage.getItem("vesper:bcmute")==="1";}catch(e){}
 RFONT["."]="000000000000010";
 function bcNoiseUrl(){
   if(BCURL)return BCURL;
-  var rate=22050,n=rate*2,buf=new ArrayBuffer(44+n*2),dv=new DataView(buf),i;
+  var rate=22050,n=rate*20,buf=new ArrayBuffer(44+n*2),dv=new DataView(buf),i;
   var w=function(o,s){for(var k=0;k<s.length;k++)dv.setUint8(o+k,s.charCodeAt(k));};
   w(0,"RIFF");dv.setUint32(4,36+n*2,true);w(8,"WAVE");w(12,"fmt ");
   dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
@@ -1850,8 +1851,8 @@ function bcNoiseUrl(){
   for(i=0;i<n;i++){
     var wn=Math.random()*2-1;
     lp+=(wn-lp)*0.45;lp2+=(lp-lp2)*0.2;
-    /* three slow swells over the loop, so the seam does not show */
-    var amp=0.72+0.28*Math.sin(i/n*Math.PI*6);
+    /* 1.5 swells a second, a whole number over the loop, so the seam does not show */
+    var amp=0.72+0.28*Math.sin(i/n*Math.PI*60);
     if(cr<=0&&Math.random()<0.0007){cr=20+Math.floor(Math.random()*90);crv=(Math.random()<0.5?-1:1)*(0.5+Math.random()*0.5);}
     var x=(lp*0.55+lp2*0.35)*amp;
     if(cr>0){x+=crv*(Math.random()<0.35?1:0.2)*(cr/110);cr--;}
